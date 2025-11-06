@@ -31,7 +31,7 @@ class HumanBlurProcessor:
     
     SUPPORTED_FORMATS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp', '.heic', '.heif'}
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black'):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -39,14 +39,20 @@ class HumanBlurProcessor:
             model_name: YOLO segmentation model to use (yolov8n-seg.pt for speed, yolov8m-seg.pt for better accuracy)
             blur_intensity: Blur kernel size (must be odd, higher = more blur)
             blur_passes: Number of blur passes for more intense effect (default: 3)
+            mask_type: Type of masking to apply ('blur' or 'black', default: 'black')
         """
         self.blur_intensity = blur_intensity if blur_intensity % 2 == 1 else blur_intensity + 1
         self.blur_passes = max(1, blur_passes)
+        self.mask_type = mask_type
         self.use_segmentation = '-seg' in model_name
         
         print(f"Loading YOLO model: {model_name}...")
         print(f"Segmentation mode: {'Enabled (Lasso effect)' if self.use_segmentation else 'Disabled (Box blur)'}")
-        print(f"Blur settings: intensity={self.blur_intensity}, passes={self.blur_passes}")
+        print(f"Mask type: {self.mask_type.upper()}")
+        if self.mask_type == 'blur':
+            print(f"Blur settings: intensity={self.blur_intensity}, passes={self.blur_passes}")
+        else:
+            print(f"Black mask mode enabled")
         
         try:
             self.model = YOLO(model_name)
@@ -163,6 +169,35 @@ class HumanBlurProcessor:
         
         return result
     
+    def black_mask_with_mask(self, image: np.ndarray, mask: np.ndarray, bbox: np.ndarray) -> np.ndarray:
+        """
+        Apply solid black color to image using segmentation mask (lasso effect).
+        
+        Args:
+            image: Input image
+            mask: Binary segmentation mask (can be combined from multiple detections)
+            bbox: Bounding box (x1, y1, x2, y2) - not used but kept for compatibility
+            
+        Returns:
+            Image with masked region replaced with solid black
+        """
+        result = image.copy()
+        
+        # Create a full image mask
+        full_mask = mask.astype(np.float32)
+        
+        # Create black image with same shape
+        black_image = np.zeros_like(image)
+        
+        # Expand mask to 3 channels for color images
+        if len(image.shape) == 3:
+            full_mask = np.stack([full_mask] * 3, axis=-1)
+        
+        # Use mask to blend: result = original * (1 - mask) + black * mask
+        result = (image * (1 - full_mask) + black_image * full_mask).astype(np.uint8)
+        
+        return result
+    
     def blur_with_box(self, image: np.ndarray, bbox: np.ndarray) -> np.ndarray:
         """
         Apply blur to bounding box region (fallback method).
@@ -182,6 +217,25 @@ class HumanBlurProcessor:
         if region.size > 0:
             blurred_region = self.apply_intense_blur(region, self.blur_intensity, self.blur_passes)
             result[y1:y2, x1:x2] = blurred_region
+        
+        return result
+    
+    def black_mask_with_box(self, image: np.ndarray, bbox: np.ndarray) -> np.ndarray:
+        """
+        Apply black mask to bounding box region (fallback method).
+        
+        Args:
+            image: Input image
+            bbox: Bounding box (x1, y1, x2, y2)
+            
+        Returns:
+            Image with box region replaced with solid black
+        """
+        result = image.copy()
+        x1, y1, x2, y2 = map(int, bbox)
+        
+        # Replace region with black
+        result[y1:y2, x1:x2] = 0
         
         return result
     
@@ -295,23 +349,34 @@ class HumanBlurProcessor:
             
             result = image.copy()
             
-            # Step 1: Combine all segmentation masks and apply blur once
+            # Step 1: Combine all segmentation masks and apply mask once
             if detections_with_masks:
                 print(f"  Combining masks from {len(detections_with_masks)} person(s)...")
                 masks_only = [mask for _, mask in detections_with_masks]
                 combined_mask = self.combine_masks(masks_only)
                 
                 if combined_mask is not None:
-                    print(f"  Applying unified lasso blur to all detected people...")
-                    result = self.blur_with_mask(result, combined_mask, None)
-                    print(f"  ✓ Lasso blur applied to {len(detections_with_masks)} person(s)")
+                    if self.mask_type == 'blur':
+                        print(f"  Applying unified lasso blur to all detected people...")
+                        result = self.blur_with_mask(result, combined_mask, None)
+                        print(f"  ✓ Lasso blur applied to {len(detections_with_masks)} person(s)")
+                    else:  # black mask
+                        print(f"  Applying unified black mask to all detected people...")
+                        result = self.black_mask_with_mask(result, combined_mask, None)
+                        print(f"  ✓ Black mask applied to {len(detections_with_masks)} person(s)")
             
-            # Step 2: Apply box blur for any detections without masks (fallback)
+            # Step 2: Apply box mask for any detections without masks (fallback)
             if detections_without_masks:
-                print(f"  Applying box blur fallback to {len(detections_without_masks)} person(s)...")
-                for bbox, _ in detections_without_masks:
-                    result = self.blur_with_box(result, bbox)
-                print(f"  ✓ Box blur applied to {len(detections_without_masks)} person(s)")
+                if self.mask_type == 'blur':
+                    print(f"  Applying box blur fallback to {len(detections_without_masks)} person(s)...")
+                    for bbox, _ in detections_without_masks:
+                        result = self.blur_with_box(result, bbox)
+                    print(f"  ✓ Box blur applied to {len(detections_without_masks)} person(s)")
+                else:  # black mask
+                    print(f"  Applying box black mask fallback to {len(detections_without_masks)} person(s)...")
+                    for bbox, _ in detections_without_masks:
+                        result = self.black_mask_with_box(result, bbox)
+                    print(f"  ✓ Box black mask applied to {len(detections_without_masks)} person(s)")
             
             # Determine output path
             if output_path is None:
@@ -374,14 +439,17 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Process with segmentation (lasso effect, default)
+  # Process with black mask (default)
   %(prog)s photo.jpg
   
-  # Process all images in a directory
+  # Process with blur instead of black mask
+  %(prog)s photo.jpg --mask-type blur
+  
+  # Process all images in a directory with black mask
   %(prog)s /path/to/images/
   
   # Extreme blur with multiple passes
-  %(prog)s photo.jpg --blur 201 --passes 5
+  %(prog)s photo.jpg --mask-type blur --blur 201 --passes 5
   
   # Adjust detection confidence threshold
   %(prog)s photo.jpg --confidence 0.7
@@ -405,17 +473,25 @@ Output naming: input.jpg -> input-background.jpg
     )
     
     parser.add_argument(
+        '-t', '--mask-type',
+        type=str,
+        default='black',
+        choices=['blur', 'black'],
+        help='Type of masking to apply: blur or black (default: black)'
+    )
+    
+    parser.add_argument(
         '-b', '--blur',
         type=int,
         default=151,
-        help='Blur intensity kernel size (must be odd, default: 151, range: 1-301)'
+        help='Blur intensity kernel size (must be odd, default: 151, range: 1-301) - only used with --mask-type blur'
     )
     
     parser.add_argument(
         '-p', '--passes',
         type=int,
         default=3,
-        help='Number of blur passes for more intense effect (default: 3, range: 1-10)'
+        help='Number of blur passes for more intense effect (default: 3, range: 1-10) - only used with --mask-type blur'
     )
     
     parser.add_argument(
@@ -475,7 +551,8 @@ Output naming: input.jpg -> input-background.jpg
     processor = HumanBlurProcessor(
         model_name=args.model, 
         blur_intensity=args.blur,
-        blur_passes=args.passes
+        blur_passes=args.passes,
+        mask_type=args.mask_type
     )
     
     # Process based on input type

@@ -1,12 +1,15 @@
 
-# Human Blur CLI Tool v2.0 🎭
+# Human Blur Tool v2.1 🎭
 
-A Python command-line tool that automatically detects and blurs humans in images using **instance segmentation** for precise, lasso-style blurring. Built with YOLOv8 segmentation models for accurate human shape detection and enhanced blur algorithms for maximum privacy.
+A Python tool that automatically detects and masks/blurs humans in images using **instance segmentation** for precise, lasso-style processing. Built with YOLOv8 segmentation models for accurate human shape detection. Available as both **CLI** and **GUI** applications.
 
-## What's New in v2.0 ✨
+## What's New in v2.1 ✨
 
-- 🎨 **Segmentation-Based Blurring (Lasso Effect)**: Uses YOLOv8 segmentation models to blur only the actual human silhouette, not rectangular boxes
-- 🌀 **Intense Multi-Pass Blur**: Significantly stronger blur with multi-pass algorithm (default: 3 passes with kernel size 151)
+- 🖤 **Black Mask Mode (NEW!)**: Solid black mask for complete privacy protection (now the default)
+- 🖥️ **GUI Interface (NEW!)**: Easy-to-use graphical interface with tkinter
+- 🎨 **Dual Masking Options**: Choose between black mask or blur mode
+- 🎯 **Segmentation-Based Processing (Lasso Effect)**: Uses YOLOv8 segmentation models to process only the actual human silhouette
+- 🌀 **Intense Multi-Pass Blur**: Significantly stronger blur with multi-pass algorithm (for blur mode)
 - 📱 **HEIC Support**: Full support for Apple's HEIC/HEIF image format
 - 🖼️ **Universal Format Support**: Enhanced format handling with PIL fallback for maximum compatibility
 - ⚡ **Improved Processing**: Better error handling and format conversion
@@ -14,11 +17,13 @@ A Python command-line tool that automatically detects and blurs humans in images
 ## Features ✨
 
 - 🎯 **Accurate Human Detection**: Uses YOLOv8 segmentation (COCO-trained) for precise person detection
-- 🎨 **Lasso-Style Blur**: Blurs only the human shape/contour, not rectangular regions
-- 🌀 **Intense Blur**: Multi-pass blur algorithm with large kernels for maximum effect
+- 🖤 **Black Mask Mode**: Apply solid black mask for complete anonymization (default)
+- 🎨 **Blur Mode**: Lasso-style blur that follows human shape/contour, not rectangular regions
+- 🌀 **Intense Blur**: Multi-pass blur algorithm with large kernels for maximum effect (blur mode)
+- 🖥️ **Dual Interface**: Command-line (CLI) and graphical (GUI) interfaces available
 - 📁 **Batch Processing**: Process single images or entire directories
 - 🚀 **Performance Optimized**: Multiple model options from nano to extra-large
-- 🔧 **Modular Design**: Easy to adapt for GUI or library use
+- 🔧 **Modular Design**: Easy to adapt for library use or integration
 - 📝 **Clear Output**: Detailed progress feedback with segmentation statistics
 - 🎨 **Universal Format Support**: JPG, PNG, BMP, TIFF, WebP, HEIC/HEIF
 
@@ -67,11 +72,31 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
 ## Usage 📖
 
-### Basic Usage
+### GUI Interface (Easiest Way!)
+
+Launch the graphical interface for easy point-and-click operation:
 
 ```bash
-# Process a single image with segmentation (lasso effect)
+python gui.py
+```
+
+The GUI provides:
+- 📂 **File/Folder Browser**: Easy selection of images or directories
+- 🎚️ **Mask Type Toggle**: Switch between Black Mask (default) and Blur modes
+- ⚙️ **Adjustable Settings**: Blur intensity, passes, confidence, and model selection
+- 📊 **Progress Indicator**: Real-time processing status
+- ✅ **User-Friendly**: No command-line knowledge required
+
+### CLI Interface (Command Line)
+
+#### Basic Usage
+
+```bash
+# Process a single image with black mask (default)
 python blur_humans.py photo.jpg
+
+# Process with blur instead of black mask
+python blur_humans.py photo.jpg --mask-type blur
 
 # Process all images in a directory
 python blur_humans.py /path/to/images/
@@ -80,11 +105,17 @@ python blur_humans.py /path/to/images/
 python blur_humans.py IMG_1234.HEIC
 ```
 
-### Advanced Options
+#### Advanced Options
 
 ```bash
-# Extreme blur with more passes
-python blur_humans.py photo.jpg --blur 201 --passes 5
+# Use black mask (default behavior)
+python blur_humans.py photo.jpg --mask-type black
+
+# Use blur mode instead of black mask
+python blur_humans.py photo.jpg --mask-type blur
+
+# Extreme blur with more passes (blur mode only)
+python blur_humans.py photo.jpg --mask-type blur --blur 201 --passes 5
 
 # Adjust detection sensitivity (0.0-1.0, higher = more strict)
 python blur_humans.py photo.jpg --confidence 0.7
@@ -93,19 +124,20 @@ python blur_humans.py photo.jpg --confidence 0.7
 python blur_humans.py photo.jpg --model yolov8m-seg.pt
 
 # Combine options for maximum blur
-python blur_humans.py /path/to/images/ --blur 251 --passes 4 --confidence 0.6 --model yolov8s-seg.pt
+python blur_humans.py /path/to/images/ --mask-type blur --blur 251 --passes 4 --confidence 0.6 --model yolov8s-seg.pt
 
 # Process with box blur (legacy mode, no segmentation)
-python blur_humans.py photo.jpg --model yolov8n.pt
+python blur_humans.py photo.jpg --mask-type blur --model yolov8n.pt
 ```
 
-### Command-Line Arguments
+#### Command-Line Arguments
 
 | Argument | Short | Type | Default | Description |
 |----------|-------|------|---------|-------------|
 | `input` | - | str | required | Path to image file or directory |
-| `--blur` | `-b` | int | 151 | Blur kernel size (1-301, must be odd) |
-| `--passes` | `-p` | int | 3 | Number of blur passes (1-10) |
+| `--mask-type` | `-t` | str | black | Masking type: 'black' or 'blur' |
+| `--blur` | `-b` | int | 151 | Blur kernel size (1-301, must be odd) - blur mode only |
+| `--passes` | `-p` | int | 3 | Number of blur passes (1-10) - blur mode only |
 | `--confidence` | `-c` | float | 0.5 | Detection confidence threshold (0.0-1.0) |
 | `--model` | `-m` | str | yolov8n-seg.pt | YOLO model selection |
 | `--version` | `-v` | - | - | Show version information |
@@ -133,7 +165,20 @@ python blur_humans.py photo.jpg --model yolov8n.pt
 
 ## Examples 💡
 
-### Example 1: Basic Single Image Processing with Segmentation
+### Example 1: GUI Interface
+
+```bash
+$ python gui.py
+```
+
+**Output**: Opens a graphical interface where you can:
+1. Browse and select files/folders
+2. Choose between Black Mask and Blur modes
+3. Adjust settings with sliders
+4. Click "Process Images" button
+5. View progress and results
+
+### Example 2: Basic Black Mask (Default)
 
 ```bash
 $ python blur_humans.py family_photo.jpg
@@ -144,13 +189,44 @@ Human Blur Tool v2.0 - Segmentation-Based Background Blur
 
 Loading YOLO model: yolov8n-seg.pt...
 Segmentation mode: Enabled (Lasso effect)
+Mask type: BLACK
+Black mask mode enabled
+✓ Model loaded successfully
+
+Processing single image: family_photo.jpg
+
+  Detected 3 human(s) in family_photo.jpg
+  Combining masks from 3 person(s)...
+  Applying unified black mask to all detected people...
+  ✓ Black mask applied to 3 person(s)
+  ✓ Saved to family_photo-background.jpg
+
+✓ Processing completed successfully!
+```
+
+**Output**: Creates `family_photo-background.jpg` with solid black silhouettes for complete anonymization
+
+### Example 3: Blur Mode Processing
+
+```bash
+$ python blur_humans.py family_photo.jpg --mask-type blur
+
+======================================================================
+Human Blur Tool v2.0 - Segmentation-Based Background Blur
+======================================================================
+
+Loading YOLO model: yolov8n-seg.pt...
+Segmentation mode: Enabled (Lasso effect)
+Mask type: BLUR
 Blur settings: intensity=151, passes=3
 ✓ Model loaded successfully
 
 Processing single image: family_photo.jpg
 
   Detected 3 human(s) in family_photo.jpg
-  Applied lasso blur to 3 person(s)
+  Combining masks from 3 person(s)...
+  Applying unified lasso blur to all detected people...
+  ✓ Lasso blur applied to 3 person(s)
   ✓ Saved to family_photo-background.jpg
 
 ✓ Processing completed successfully!
@@ -158,7 +234,7 @@ Processing single image: family_photo.jpg
 
 **Output**: Creates `family_photo-background.jpg` with precise lasso-style blur around each person
 
-### Example 2: Processing HEIC Images from iPhone
+### Example 4: Processing HEIC Images from iPhone
 
 ```bash
 $ python blur_humans.py IMG_1234.HEIC
@@ -182,12 +258,12 @@ Processing single image: IMG_1234.HEIC
 ✓ Processing completed successfully!
 ```
 
-**Output**: Loads HEIC, applies segmentation blur, saves as JPG
+**Output**: Loads HEIC, applies black mask by default, saves as JPG
 
-### Example 3: Extreme Blur for Maximum Privacy
+### Example 5: Extreme Blur for Maximum Privacy
 
 ```bash
-$ python blur_humans.py sensitive_photo.jpg --blur 251 --passes 5
+$ python blur_humans.py sensitive_photo.jpg --mask-type blur --blur 251 --passes 5
 
 ======================================================================
 Human Blur Tool v2.0 - Segmentation-Based Background Blur
@@ -209,7 +285,7 @@ Processing single image: sensitive_photo.jpg
 
 **Output**: Creates extremely blurred output with 5 blur passes
 
-### Example 4: Batch Processing Directory
+### Example 6: Batch Processing Directory
 
 ```bash
 $ python blur_humans.py ./vacation_photos/
@@ -348,13 +424,16 @@ blur_humans.py
 - [x] **Intense multi-pass blur** ✅ v2.0
 - [x] **HEIC format support** ✅ v2.0
 - [x] **Universal format support** ✅ v2.0
-- [ ] GUI interface with preview
+- [x] **Black mask mode** ✅ v2.1
+- [x] **GUI interface** ✅ v2.1
 - [ ] Video processing support
-- [ ] Alternative anonymization methods (pixelation, masking)
-- [ ] Face-only detection and blur
+- [ ] Alternative anonymization methods (pixelation, color masking)
+- [ ] Face-only detection and masking
 - [ ] API/library mode for integration
 - [ ] Custom output directory
 - [ ] Background replacement options
+- [ ] Batch export with custom naming
+- [ ] GUI preview before processing
 
 ## Troubleshooting 🔧
 
@@ -404,7 +483,15 @@ If you see "Box blur" instead of "Lasso blur":
 
 ## Version History 📋
 
-### v2.0.0 (Current) - Enhanced with Segmentation
+### v2.1.0 (Current) - Black Mask & GUI
+- ✨ **New**: Black mask mode for complete anonymization
+- ✨ **New**: GUI interface with tkinter for easy use
+- ✨ **New**: Mask type selection (black or blur)
+- 🔧 **Changed**: Default mask type to 'black' (was blur)
+- ⚡ **Enhanced**: Better user experience with both CLI and GUI options
+- 📝 **Enhanced**: Updated documentation with new features
+
+### v2.0.0 - Enhanced with Segmentation
 - ✨ **New**: Segmentation-based blurring (lasso effect)
 - ✨ **New**: HEIC/HEIF format support
 - ⚡ **Enhanced**: Multi-pass blur with larger kernels (up to 301x301)
@@ -442,4 +529,4 @@ For issues or questions:
 ---
 
 **Made with ❤️ for privacy-preserving background analysis**
-**v2.0 - Now with precision segmentation**
+**v2.1 - Now with Black Mask Mode & GUI Interface**
