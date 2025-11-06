@@ -1,12 +1,16 @@
 
-# Human Blur Tool v2.1 🎭
+# Human Blur Tool v3.0 🎭
 
-A Python tool that automatically detects and masks/blurs humans in images using **instance segmentation** for precise, lasso-style processing. Built with YOLOv8 segmentation models for accurate human shape detection. Available as both **CLI** and **GUI** applications.
+A Python tool that automatically detects and masks/blurs humans in **images and videos** using **instance segmentation** for precise, lasso-style processing. Built with YOLOv8 segmentation models for accurate human shape detection. Available as both **CLI** and **GUI** applications.
 
-## What's New in v2.1 ✨
+## What's New in v3.0 ✨
 
-- 🖤 **Black Mask Mode (NEW!)**: Solid black mask for complete privacy protection (now the default)
-- 🖥️ **GUI Interface (NEW!)**: Easy-to-use graphical interface with tkinter
+- 🎬 **Video Processing Support (NEW!)**: Process .mp4 and .mov video files frame-by-frame
+- 🔊 **Audio Preservation (NEW!)**: Automatically preserves audio tracks when ffmpeg is available
+- 📊 **Progress Indicators (NEW!)**: Real-time frame-by-frame progress for video processing
+- 🎚️ **Media Type Filter (NEW!)**: Process only images, only videos, or both in directories
+- 🖤 **Black Mask Mode**: Solid black mask for complete privacy protection (default)
+- 🖥️ **GUI Interface**: Easy-to-use graphical interface with tkinter
 - 🎨 **Dual Masking Options**: Choose between black mask or blur mode
 - 🎯 **Segmentation-Based Processing (Lasso Effect)**: Uses YOLOv8 segmentation models to process only the actual human silhouette
 - 🌀 **Intense Multi-Pass Blur**: Significantly stronger blur with multi-pass algorithm (for blur mode)
@@ -17,15 +21,17 @@ A Python tool that automatically detects and masks/blurs humans in images using 
 ## Features ✨
 
 - 🎯 **Accurate Human Detection**: Uses YOLOv8 segmentation (COCO-trained) for precise person detection
+- 🎬 **Video Processing**: Frame-by-frame processing of .mp4 and .mov video files
+- 🔊 **Audio Preservation**: Automatic audio extraction and merging (requires ffmpeg)
 - 🖤 **Black Mask Mode**: Apply solid black mask for complete anonymization (default)
 - 🎨 **Blur Mode**: Lasso-style blur that follows human shape/contour, not rectangular regions
 - 🌀 **Intense Blur**: Multi-pass blur algorithm with large kernels for maximum effect (blur mode)
 - 🖥️ **Dual Interface**: Command-line (CLI) and graphical (GUI) interfaces available
-- 📁 **Batch Processing**: Process single images or entire directories
+- 📁 **Batch Processing**: Process single files or entire directories with media type filtering
 - 🚀 **Performance Optimized**: Multiple model options from nano to extra-large
 - 🔧 **Modular Design**: Easy to adapt for library use or integration
-- 📝 **Clear Output**: Detailed progress feedback with segmentation statistics
-- 🎨 **Universal Format Support**: JPG, PNG, BMP, TIFF, WebP, HEIC/HEIF
+- 📝 **Clear Output**: Detailed progress feedback with frame-by-frame statistics
+- 🎨 **Universal Format Support**: Images (JPG, PNG, BMP, TIFF, WebP, HEIC/HEIF), Videos (.mp4, .mov)
 
 ## Installation 🛠️
 
@@ -59,6 +65,25 @@ This is included in `requirements.txt`, but if you encounter issues on some syst
 - **Linux**: May require `libheif-dev`: `sudo apt-get install libheif-dev`
 - **Windows**: Usually works out of the box with pip installation
 
+### Optional: Video Audio Preservation
+
+For preserving audio in video files, install ffmpeg:
+
+**Linux (Debian/Ubuntu)**:
+```bash
+sudo apt-get install ffmpeg
+```
+
+**macOS**:
+```bash
+brew install ffmpeg
+```
+
+**Windows**:
+Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
+
+> **Note**: Video processing works without ffmpeg, but audio tracks will not be preserved.
+
 ### Optional: GPU Acceleration
 
 For faster processing with NVIDIA GPU:
@@ -91,12 +116,37 @@ The GUI provides:
 
 #### Basic Usage
 
+**Images:**
 ```bash
 # Process a single image with black mask (default)
 python blur_humans.py photo.jpg
 
 # Process with blur instead of black mask
 python blur_humans.py photo.jpg --mask-type blur
+```
+
+**Videos:**
+```bash
+# Process a video with black mask (default)
+python blur_humans.py video.mp4
+
+# Process video with blur effect
+python blur_humans.py video.mp4 --mask-type blur
+
+# Process all videos in a directory
+python blur_humans.py /path/to/videos/ --media-type videos
+```
+
+**Mixed Media Directories:**
+```bash
+# Process both images and videos (default)
+python blur_humans.py /path/to/media/
+
+# Process only images
+python blur_humans.py /path/to/media/ --media-type images
+
+# Process only videos
+python blur_humans.py /path/to/media/ --media-type videos
 
 # Process all images in a directory
 python blur_humans.py /path/to/images/
@@ -134,7 +184,8 @@ python blur_humans.py photo.jpg --mask-type blur --model yolov8n.pt
 
 | Argument | Short | Type | Default | Description |
 |----------|-------|------|---------|-------------|
-| `input` | - | str | required | Path to image file or directory |
+| `input` | - | str | required | Path to image/video file or directory |
+| `--media-type` | - | str | both | Media type filter for directories: 'images', 'videos', 'both' |
 | `--mask-type` | `-t` | str | black | Masking type: 'black' or 'blur' |
 | `--blur` | `-b` | int | 151 | Blur kernel size (1-301, must be odd) - blur mode only |
 | `--passes` | `-p` | int | 3 | Number of blur passes (1-10) - blur mode only |
@@ -184,7 +235,7 @@ $ python gui.py
 $ python blur_humans.py family_photo.jpg
 
 ======================================================================
-Human Blur Tool v2.0 - Segmentation-Based Background Blur
+Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -260,13 +311,48 @@ Processing single image: IMG_1234.HEIC
 
 **Output**: Loads HEIC, applies black mask by default, saves as JPG
 
-### Example 5: Extreme Blur for Maximum Privacy
+### Example 5: Video Processing with Audio Preservation
+
+```bash
+$ python blur_humans.py family_video.mp4
+
+======================================================================
+Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
+======================================================================
+
+Loading YOLO model: yolov8n-seg.pt...
+Segmentation mode: Enabled (Lasso effect)
+Mask type: BLACK
+Black mask mode enabled
+✓ Model loaded successfully
+
+Processing single video: family_video.mp4
+
+  Video properties: 1920x1080 @ 30.00 FPS, 900 frames
+  Extracting audio...
+  ✓ Audio extracted successfully
+  Processing video frames...
+  Processing frame 90/900 (10%)
+  Processing frame 180/900 (20%)
+  ...
+  Processing frame 900/900 (100%)
+  ✓ Processed 900 frames (750 frames with humans detected)
+  Merging audio back into video...
+  ✓ Audio merged successfully
+  ✓ Saved to family_video-background.mp4
+
+✓ Processing completed successfully!
+```
+
+**Output**: Creates `family_video-background.mp4` with masked humans and preserved audio
+
+### Example 7: Extreme Blur for Maximum Privacy
 
 ```bash
 $ python blur_humans.py sensitive_photo.jpg --mask-type blur --blur 251 --passes 5
 
 ======================================================================
-Human Blur Tool v2.0 - Segmentation-Based Background Blur
+Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -285,18 +371,19 @@ Processing single image: sensitive_photo.jpg
 
 **Output**: Creates extremely blurred output with 5 blur passes
 
-### Example 6: Batch Processing Directory
+### Example 8: Batch Processing Directory
 
 ```bash
 $ python blur_humans.py ./vacation_photos/
 
 ======================================================================
-Human Blur Tool v2.0 - Segmentation-Based Background Blur
+Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
 Segmentation mode: Enabled (Lasso effect)
-Blur settings: intensity=151, passes=3
+Mask type: BLACK
+Black mask mode enabled
 ✓ Model loaded successfully
 
 Processing directory: vacation_photos
@@ -328,26 +415,44 @@ Results: 12/15 images processed successfully
 
 The tool automatically names output files by appending `-background` before the file extension:
 
+**Images:**
 - `photo.jpg` → `photo-background.jpg`
 - `image.png` → `image-background.png`
 - `my_picture.jpeg` → `my_picture-background.jpeg`
 - `IMG_1234.HEIC` → `IMG_1234-background.jpg` (auto-converted to JPG)
 
+**Videos:**
+- `video.mp4` → `video-background.mp4`
+- `clip.mov` → `clip-background.mov`
+
 Original files are **never modified**.
 
-## Supported Image Formats 🖼️
+## Supported Media Formats 🖼️
 
-### Fully Supported (Read & Write)
+### Image Formats
+
+**Fully Supported (Read & Write):**
 - **JPEG** (`.jpg`, `.jpeg`)
 - **PNG** (`.png`)
 - **BMP** (`.bmp`)
 - **TIFF** (`.tiff`, `.tif`)
 - **WebP** (`.webp`)
 
-### Read-Only (Output as JPG)
+**Read-Only (Output as JPG):**
 - **HEIC/HEIF** (`.heic`, `.heif`) - Apple's image format
   - Requires `pillow-heif` package
   - Automatically converted to JPG for output
+
+### Video Formats
+
+**Fully Supported:**
+- **MP4** (`.mp4`) - Most common video format
+- **MOV** (`.mov`) - Apple's video format
+
+**Audio Preservation:**
+- Requires `ffmpeg` to be installed
+- Audio tracks are automatically extracted and merged back
+- Works without ffmpeg, but audio will not be preserved
 
 ## Error Handling 🛡️
 
