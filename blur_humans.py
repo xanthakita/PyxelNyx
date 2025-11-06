@@ -2,11 +2,13 @@
 #!/usr/bin/env python3
 """
 Human Blur CLI Tool - Enhanced with Segmentation
-A command-line tool to detect and blur humans in images using instance segmentation.
+A command-line tool to detect and blur humans in images and videos using instance segmentation.
 """
 
 import argparse
 import sys
+import subprocess
+import tempfile
 from pathlib import Path
 from typing import List, Tuple, Optional
 import cv2
@@ -25,11 +27,13 @@ except ImportError:
 
 class HumanBlurProcessor:
     """
-    A class to handle human detection and blurring in images using segmentation.
+    A class to handle human detection and blurring in images and videos using segmentation.
     This modular design allows for easy adaptation to GUI or library use.
     """
     
-    SUPPORTED_FORMATS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp', '.heic', '.heif'}
+    SUPPORTED_IMAGE_FORMATS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp', '.heic', '.heif'}
+    SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
+    SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
     def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black'):
         """
@@ -399,54 +403,321 @@ class HumanBlurProcessor:
             traceback.print_exc()
             return False
     
-    def process_directory(self, directory_path: Path, confidence: float = 0.5) -> Tuple[int, int]:
+    def check_ffmpeg_available(self) -> bool:
         """
-        Process all images in a directory.
+        Check if ffmpeg is available in system PATH.
+        
+        Returns:
+            True if ffmpeg is available, False otherwise
+        """
+        try:
+            subprocess.run(['ffmpeg', '-version'], 
+                         stdout=subprocess.DEVNULL, 
+                         stderr=subprocess.DEVNULL, 
+                         check=True)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
+    
+    def extract_audio(self, video_path: Path, audio_path: Path) -> bool:
+        """
+        Extract audio from video using ffmpeg.
         
         Args:
-            directory_path: Path to directory containing images
+            video_path: Path to input video
+            audio_path: Path to save extracted audio
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            subprocess.run([
+                'ffmpeg', '-i', str(video_path),
+                '-vn',  # No video
+                '-acodec', 'copy',  # Copy audio codec
+                '-y',  # Overwrite output file
+                str(audio_path)
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            return True
+        except subprocess.CalledProcessError:
+            return False
+    
+    def merge_audio(self, video_path: Path, audio_path: Path, output_path: Path) -> bool:
+        """
+        Merge audio into video using ffmpeg.
+        
+        Args:
+            video_path: Path to video file (without audio)
+            audio_path: Path to audio file
+            output_path: Path for output video
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            subprocess.run([
+                'ffmpeg', '-i', str(video_path),
+                '-i', str(audio_path),
+                '-c:v', 'copy',  # Copy video codec
+                '-c:a', 'aac',  # Encode audio to AAC
+                '-strict', 'experimental',
+                '-y',  # Overwrite output file
+                str(output_path)
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            return True
+        except subprocess.CalledProcessError:
+            return False
+    
+    def process_video(self, video_path: Path, output_path: Path = None, confidence: float = 0.5) -> bool:
+        """
+        Process a video: detect humans and blur them frame by frame using segmentation.
+        
+        Args:
+            video_path: Path to input video
+            output_path: Path for output video (optional)
             confidence: Detection confidence threshold
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        temp_video_path = None
+        audio_path = None
+        has_audio = False
+        
+        try:
+            # Open video
+            cap = cv2.VideoCapture(str(video_path))
+            if not cap.isOpened():
+                print(f"  ✗ Error: Could not open video {video_path}")
+                return False
+            
+            # Get video properties
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            
+            print(f"  Video properties: {width}x{height} @ {fps:.2f} FPS, {total_frames} frames")
+            
+            # Determine output path
+            if output_path is None:
+                output_path = video_path.parent / f"{video_path.stem}-background{video_path.suffix}"
+            
+            # Check for ffmpeg availability for audio processing
+            ffmpeg_available = self.check_ffmpeg_available()
+            
+            # Try to extract audio if ffmpeg is available
+            if ffmpeg_available:
+                audio_path = Path(tempfile.mktemp(suffix='.aac'))
+                print(f"  Extracting audio...")
+                has_audio = self.extract_audio(video_path, audio_path)
+                if has_audio:
+                    print(f"  ✓ Audio extracted successfully")
+                else:
+                    print(f"  ℹ No audio track found or unable to extract")
+            else:
+                print(f"  ⚠ ffmpeg not available - audio will not be preserved")
+                print(f"  ℹ Install ffmpeg to enable audio preservation")
+            
+            # Create temporary video path for processing (without audio)
+            if has_audio:
+                temp_video_path = Path(tempfile.mktemp(suffix=video_path.suffix))
+                video_writer_path = temp_video_path
+            else:
+                video_writer_path = output_path
+            
+            # Define codec and create VideoWriter
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Use mp4v codec
+            out = cv2.VideoWriter(str(video_writer_path), fourcc, fps, (width, height))
+            
+            if not out.isOpened():
+                print(f"  ✗ Error: Could not create video writer")
+                cap.release()
+                return False
+            
+            print(f"  Processing video frames...")
+            
+            frame_count = 0
+            processed_count = 0
+            
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                
+                frame_count += 1
+                
+                # Show progress every 10 frames or at the end
+                if frame_count % 10 == 0 or frame_count == total_frames:
+                    print(f"  Processing frame {frame_count}/{total_frames} ({frame_count*100//total_frames}%)", end='\r')
+                
+                # Detect humans with segmentation masks
+                detections = self.detect_humans_with_masks(frame, confidence)
+                
+                if detections:
+                    processed_count += 1
+                    
+                    # Separate detections into those with masks and those without
+                    detections_with_masks = [(bbox, mask) for bbox, mask in detections if mask is not None and self.use_segmentation]
+                    detections_without_masks = [(bbox, mask) for bbox, mask in detections if mask is None or not self.use_segmentation]
+                    
+                    result = frame.copy()
+                    
+                    # Apply unified mask for all detections with masks
+                    if detections_with_masks:
+                        masks_only = [mask for _, mask in detections_with_masks]
+                        combined_mask = self.combine_masks(masks_only)
+                        
+                        if combined_mask is not None:
+                            if self.mask_type == 'blur':
+                                result = self.blur_with_mask(result, combined_mask, None)
+                            else:  # black mask
+                                result = self.black_mask_with_mask(result, combined_mask, None)
+                    
+                    # Apply box mask for any detections without masks (fallback)
+                    if detections_without_masks:
+                        for bbox, _ in detections_without_masks:
+                            if self.mask_type == 'blur':
+                                result = self.blur_with_box(result, bbox)
+                            else:  # black mask
+                                result = self.black_mask_with_box(result, bbox)
+                    
+                    out.write(result)
+                else:
+                    # No humans detected, write original frame
+                    out.write(frame)
+            
+            # Release resources
+            cap.release()
+            out.release()
+            
+            print(f"\n  ✓ Processed {frame_count} frames ({processed_count} frames with humans detected)")
+            
+            # Merge audio back if available
+            if has_audio and ffmpeg_available and audio_path.exists():
+                print(f"  Merging audio back into video...")
+                if self.merge_audio(temp_video_path, audio_path, output_path):
+                    print(f"  ✓ Audio merged successfully")
+                    # Clean up temp files
+                    temp_video_path.unlink()
+                else:
+                    print(f"  ⚠ Failed to merge audio, saving video without audio")
+                    # If merge failed, use the video without audio
+                    if temp_video_path.exists():
+                        temp_video_path.rename(output_path)
+                
+                # Clean up audio file
+                if audio_path.exists():
+                    audio_path.unlink()
+            
+            print(f"  ✓ Saved to {output_path.name}")
+            return True
+            
+        except Exception as e:
+            print(f"  ✗ Error processing video {video_path}: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # Clean up temp files on error
+            if temp_video_path and temp_video_path.exists():
+                temp_video_path.unlink()
+            if audio_path and audio_path.exists():
+                audio_path.unlink()
+            
+            return False
+    
+    def process_directory(self, directory_path: Path, confidence: float = 0.5, media_type: str = 'both') -> Tuple[int, int]:
+        """
+        Process all images and/or videos in a directory.
+        
+        Args:
+            directory_path: Path to directory containing media files
+            confidence: Detection confidence threshold
+            media_type: Type of media to process ('images', 'videos', or 'both')
             
         Returns:
             Tuple of (successful_count, total_count)
         """
-        # Find all supported image files
-        image_files = []
-        for ext in self.SUPPORTED_FORMATS:
-            image_files.extend(directory_path.glob(f"*{ext}"))
-            image_files.extend(directory_path.glob(f"*{ext.upper()}"))
+        # Determine which formats to search for based on media_type
+        if media_type == 'images':
+            formats_to_process = self.SUPPORTED_IMAGE_FORMATS
+        elif media_type == 'videos':
+            formats_to_process = self.SUPPORTED_VIDEO_FORMATS
+        else:  # 'both'
+            formats_to_process = self.SUPPORTED_FORMATS
         
-        if not image_files:
-            print(f"✗ No supported image files found in {directory_path}")
+        # Find all supported media files
+        image_files = []
+        video_files = []
+        
+        for ext in formats_to_process:
+            found_files = list(directory_path.glob(f"*{ext}")) + list(directory_path.glob(f"*{ext.upper()}"))
+            for file in found_files:
+                if file.suffix.lower() in self.SUPPORTED_IMAGE_FORMATS:
+                    image_files.append(file)
+                elif file.suffix.lower() in self.SUPPORTED_VIDEO_FORMATS:
+                    video_files.append(file)
+        
+        total_files = len(image_files) + len(video_files)
+        
+        if total_files == 0:
+            print(f"✗ No supported media files found in {directory_path}")
             return 0, 0
         
-        print(f"\nFound {len(image_files)} image(s) to process\n")
+        # Print summary
+        if image_files and video_files:
+            print(f"\nFound {len(image_files)} image(s) and {len(video_files)} video(s) to process\n")
+        elif image_files:
+            print(f"\nFound {len(image_files)} image(s) to process\n")
+        else:
+            print(f"\nFound {len(video_files)} video(s) to process\n")
         
         successful = 0
-        for i, image_path in enumerate(image_files, 1):
-            print(f"Processing [{i}/{len(image_files)}]: {image_path.name}")
+        current = 0
+        
+        # Process images first
+        for image_path in image_files:
+            current += 1
+            print(f"Processing [{current}/{total_files}] (Image): {image_path.name}")
             if self.process_image(image_path, confidence=confidence):
                 successful += 1
             print()
         
-        return successful, len(image_files)
+        # Process videos
+        for video_path in video_files:
+            current += 1
+            print(f"Processing [{current}/{total_files}] (Video): {video_path.name}")
+            if self.process_video(video_path, confidence=confidence):
+                successful += 1
+            print()
+        
+        return successful, total_files
 
 
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
-        description='Detect and blur humans in images using segmentation (lasso effect).',
+        description='Detect and blur humans in images and videos using segmentation (lasso effect).',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Process with black mask (default)
+  # Process image with black mask (default)
   %(prog)s photo.jpg
+  
+  # Process video with black mask
+  %(prog)s video.mp4
   
   # Process with blur instead of black mask
   %(prog)s photo.jpg --mask-type blur
   
-  # Process all images in a directory with black mask
-  %(prog)s /path/to/images/
+  # Process all media (images and videos) in a directory
+  %(prog)s /path/to/media/
+  
+  # Process only videos in a directory
+  %(prog)s /path/to/media/ --media-type videos
+  
+  # Process only images in a directory
+  %(prog)s /path/to/media/ --media-type images
   
   # Extreme blur with multiple passes
   %(prog)s photo.jpg --mask-type blur --blur 201 --passes 5
@@ -460,16 +731,29 @@ Examples:
   # Process HEIC images from iPhone
   %(prog)s IMG_1234.HEIC
 
-Supported formats: .jpg, .jpeg, .png, .bmp, .tiff, .tif, .webp, .heic, .heif
+Supported image formats: .jpg, .jpeg, .png, .bmp, .tiff, .tif, .webp, .heic, .heif
+Supported video formats: .mp4, .mov
 Output naming: input.jpg -> input-background.jpg
+              input.mp4 -> input-background.mp4
               input.heic -> input-background.jpg (auto-converted)
+
+Note: Audio preservation in videos requires ffmpeg to be installed.
+      Install ffmpeg: sudo apt-get install ffmpeg (Linux) or brew install ffmpeg (Mac)
         """
     )
     
     parser.add_argument(
         'input',
         type=str,
-        help='Path to an image file or directory containing images'
+        help='Path to an image/video file or directory containing media files'
+    )
+    
+    parser.add_argument(
+        '--media-type',
+        type=str,
+        default='both',
+        choices=['images', 'videos', 'both'],
+        help='Type of media to process when input is a directory (default: both)'
     )
     
     parser.add_argument(
@@ -513,7 +797,7 @@ Output naming: input.jpg -> input-background.jpg
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='%(prog)s 2.0.0 - Enhanced with Segmentation'
+        version='%(prog)s 3.0.0 - Enhanced with Segmentation and Video Support'
     )
     
     args = parser.parse_args()
@@ -545,7 +829,7 @@ Output naming: input.jpg -> input-background.jpg
     
     # Initialize processor
     print("\n" + "="*70)
-    print("Human Blur Tool v2.0 - Segmentation-Based Background Blur")
+    print("Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)")
     print("="*70 + "\n")
     
     processor = HumanBlurProcessor(
@@ -557,8 +841,19 @@ Output naming: input.jpg -> input-background.jpg
     
     # Process based on input type
     if input_path.is_file():
-        print(f"\nProcessing single image: {input_path.name}\n")
-        success = processor.process_image(input_path, confidence=args.confidence)
+        # Determine if it's an image or video
+        if input_path.suffix.lower() in processor.SUPPORTED_IMAGE_FORMATS:
+            print(f"\nProcessing single image: {input_path.name}\n")
+            success = processor.process_image(input_path, confidence=args.confidence)
+        elif input_path.suffix.lower() in processor.SUPPORTED_VIDEO_FORMATS:
+            print(f"\nProcessing single video: {input_path.name}\n")
+            success = processor.process_video(input_path, confidence=args.confidence)
+        else:
+            print(f"✗ Error: Unsupported file format: {input_path.suffix}")
+            print(f"Supported image formats: {', '.join(sorted(processor.SUPPORTED_IMAGE_FORMATS))}")
+            print(f"Supported video formats: {', '.join(sorted(processor.SUPPORTED_VIDEO_FORMATS))}")
+            sys.exit(1)
+        
         if success:
             print("\n✓ Processing completed successfully!")
         else:
@@ -566,10 +861,11 @@ Output naming: input.jpg -> input-background.jpg
             sys.exit(1)
     
     elif input_path.is_dir():
-        print(f"\nProcessing directory: {input_path}\n")
-        successful, total = processor.process_directory(input_path, confidence=args.confidence)
+        print(f"\nProcessing directory: {input_path}")
+        print(f"Media type filter: {args.media_type}\n")
+        successful, total = processor.process_directory(input_path, confidence=args.confidence, media_type=args.media_type)
         print("="*70)
-        print(f"Results: {successful}/{total} images processed successfully")
+        print(f"Results: {successful}/{total} file(s) processed successfully")
         print("="*70)
         
         if successful == 0:
