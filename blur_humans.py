@@ -9,6 +9,7 @@ import argparse
 import sys
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 from typing import List, Tuple, Optional
 import cv2
@@ -332,6 +333,9 @@ class HumanBlurProcessor:
             True if successful, False otherwise
         """
         try:
+            # Start timing
+            start_time = time.time()
+            
             # Load image with format support
             image = self.load_image(image_path)
             if image is None:
@@ -392,6 +396,9 @@ class HumanBlurProcessor:
             
             # Save result
             if self.save_image(result, output_path, image_path):
+                # Calculate and display processing time
+                processing_time = time.time() - start_time
+                print(f"  Processing time: {processing_time:.2f} seconds")
                 print(f"  ✓ Saved to {output_path.name}")
                 return True
             else:
@@ -485,6 +492,9 @@ class HumanBlurProcessor:
         has_audio = False
         
         try:
+            # Start timing
+            start_time = time.time()
+            
             # Open video
             cap = cv2.VideoCapture(str(video_path))
             if not cap.isOpened():
@@ -610,6 +620,10 @@ class HumanBlurProcessor:
                 if audio_path.exists():
                     audio_path.unlink()
             
+            # Calculate and display processing time
+            processing_time = time.time() - start_time
+            avg_per_frame = processing_time / frame_count if frame_count > 0 else 0
+            print(f"  Processing time: {processing_time:.2f} seconds (avg {avg_per_frame:.2f} sec/frame)")
             print(f"  ✓ Saved to {output_path.name}")
             return True
             
