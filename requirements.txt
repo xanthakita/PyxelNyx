@@ -1,11 +1,17 @@
 
-# Core dependencies for Human Blur CLI Tool
+# Core dependencies for Human Blur CLI Tool v2.0 (Enhanced with Segmentation)
 opencv-python>=4.8.0
 numpy>=1.24.0
 ultralytics>=8.0.0
 torch>=2.0.0
 torchvision>=0.15.0
+Pillow>=10.0.0
+
+# HEIC/HEIF support (Apple image format)
+pillow-heif>=0.13.0
 
 # Optional: For GPU acceleration (if CUDA available)
 # Install separately based on your CUDA version:
 # pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# or for CUDA 12.1:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
