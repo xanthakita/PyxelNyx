@@ -111,14 +111,36 @@ class HumanBlurProcessor:
             blurred = cv2.GaussianBlur(blurred, (kernel_size, kernel_size), 0)
         return blurred
     
+    def combine_masks(self, masks: List[np.ndarray]) -> np.ndarray:
+        """
+        Combine multiple segmentation masks into a single unified mask.
+        
+        Args:
+            masks: List of binary segmentation masks
+            
+        Returns:
+            Combined binary mask where any pixel marked in any mask is marked in result
+        """
+        if not masks:
+            return None
+        
+        # Start with first mask
+        combined = masks[0].astype(np.float32)
+        
+        # Merge remaining masks using logical OR
+        for mask in masks[1:]:
+            combined = np.maximum(combined, mask.astype(np.float32))
+        
+        return combined
+    
     def blur_with_mask(self, image: np.ndarray, mask: np.ndarray, bbox: np.ndarray) -> np.ndarray:
         """
         Apply blur to image using segmentation mask (lasso effect).
         
         Args:
             image: Input image
-            mask: Binary segmentation mask
-            bbox: Bounding box (x1, y1, x2, y2)
+            mask: Binary segmentation mask (can be combined from multiple detections)
+            bbox: Bounding box (x1, y1, x2, y2) - not used but kept for compatibility
             
         Returns:
             Image with masked region blurred
@@ -267,25 +289,29 @@ class HumanBlurProcessor:
             
             print(f"  Detected {len(detections)} human(s) in {image_path.name}")
             
-            # Apply blur using segmentation masks or boxes
+            # Separate detections into those with masks and those without
+            detections_with_masks = [(bbox, mask) for bbox, mask in detections if mask is not None and self.use_segmentation]
+            detections_without_masks = [(bbox, mask) for bbox, mask in detections if mask is None or not self.use_segmentation]
+            
             result = image.copy()
-            masks_used = 0
-            boxes_used = 0
             
-            for bbox, mask in detections:
-                if mask is not None and self.use_segmentation:
-                    # Use segmentation mask for precise lasso-style blur
-                    result = self.blur_with_mask(result, mask, bbox)
-                    masks_used += 1
-                else:
-                    # Fallback to box blur
+            # Step 1: Combine all segmentation masks and apply blur once
+            if detections_with_masks:
+                print(f"  Combining masks from {len(detections_with_masks)} person(s)...")
+                masks_only = [mask for _, mask in detections_with_masks]
+                combined_mask = self.combine_masks(masks_only)
+                
+                if combined_mask is not None:
+                    print(f"  Applying unified lasso blur to all detected people...")
+                    result = self.blur_with_mask(result, combined_mask, None)
+                    print(f"  ✓ Lasso blur applied to {len(detections_with_masks)} person(s)")
+            
+            # Step 2: Apply box blur for any detections without masks (fallback)
+            if detections_without_masks:
+                print(f"  Applying box blur fallback to {len(detections_without_masks)} person(s)...")
+                for bbox, _ in detections_without_masks:
                     result = self.blur_with_box(result, bbox)
-                    boxes_used += 1
-            
-            if self.use_segmentation and masks_used > 0:
-                print(f"  Applied lasso blur to {masks_used} person(s)")
-            if boxes_used > 0:
-                print(f"  Applied box blur to {boxes_used} person(s)")
+                print(f"  ✓ Box blur applied to {len(detections_without_masks)} person(s)")
             
             # Determine output path
             if output_path is None:
