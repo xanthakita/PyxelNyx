@@ -10,8 +10,9 @@ import sys
 import subprocess
 import tempfile
 import time
+import json
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Any
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -36,7 +37,7 @@ class HumanBlurProcessor:
     SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
     SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black'):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = True, detection_model: str = 'yolov8m.pt'):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -45,11 +46,15 @@ class HumanBlurProcessor:
             blur_intensity: Blur kernel size (must be odd, higher = more blur)
             blur_passes: Number of blur passes for more intense effect (default: 3)
             mask_type: Type of masking to apply ('blur' or 'black', default: 'black')
+            enable_object_detection: Enable background object detection (default: True)
+            detection_model: YOLO model for object detection (default: yolov8m.pt)
         """
         self.blur_intensity = blur_intensity if blur_intensity % 2 == 1 else blur_intensity + 1
         self.blur_passes = max(1, blur_passes)
         self.mask_type = mask_type
         self.use_segmentation = '-seg' in model_name
+        self.enable_object_detection = enable_object_detection
+        self.all_detections = []  # Store all object detections
         
         print(f"Loading YOLO model: {model_name}...")
         print(f"Segmentation mode: {'Enabled (Lasso effect)' if self.use_segmentation else 'Disabled (Box blur)'}")
@@ -65,6 +70,17 @@ class HumanBlurProcessor:
         except Exception as e:
             print(f"✗ Error loading model: {e}")
             sys.exit(1)
+        
+        # Load object detection model if enabled
+        if self.enable_object_detection:
+            print(f"Loading object detection model: {detection_model}...")
+            try:
+                self.detection_model = YOLO(detection_model)
+                print("✓ Object detection model loaded successfully")
+            except Exception as e:
+                print(f"✗ Error loading object detection model: {e}")
+                print("⚠ Continuing without object detection")
+                self.enable_object_detection = False
     
     def detect_humans_with_masks(self, image: np.ndarray, confidence: float = 0.5) -> List[Tuple[np.ndarray, Optional[np.ndarray]]]:
         """
@@ -104,6 +120,105 @@ class HumanBlurProcessor:
                     detections.append((bbox, mask))
         
         return detections
+    
+    def detect_background_objects(self, image: np.ndarray, confidence: float = 0.5, frame_number: Optional[int] = None, timestamp: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Detect all objects in the image EXCEPT humans (person class).
+        
+        Args:
+            image: Input image as numpy array
+            confidence: Confidence threshold for detection
+            frame_number: Frame number (for videos, optional)
+            timestamp: Timestamp in format HH:MM:SS.mmm (for videos, optional)
+            
+        Returns:
+            List of detection dictionaries with label, confidence, bbox, and frame/timestamp info
+        """
+        if not self.enable_object_detection:
+            return []
+        
+        results = self.detection_model(image, conf=confidence, verbose=False)
+        
+        detections = []
+        for result in results:
+            boxes = result.boxes
+            
+            for box in boxes:
+                cls_id = int(box.cls[0])
+                
+                # Skip person class (class 0 in COCO dataset)
+                if cls_id == 0:
+                    continue
+                
+                label = self.detection_model.names[cls_id]
+                conf = float(box.conf[0])
+                xyxy = box.xyxy[0].cpu().numpy().tolist()
+                
+                detection_dict = {
+                    "label": label,
+                    "confidence": round(conf, 4),
+                    "bbox": {
+                        "x1": round(xyxy[0], 2),
+                        "y1": round(xyxy[1], 2),
+                        "x2": round(xyxy[2], 2),
+                        "y2": round(xyxy[3], 2)
+                    }
+                }
+                
+                # Add frame/timestamp info for videos
+                if frame_number is not None:
+                    detection_dict["frame"] = frame_number
+                if timestamp is not None:
+                    detection_dict["timestamp"] = timestamp
+                
+                detections.append(detection_dict)
+        
+        return detections
+    
+    def format_timestamp(self, frame_number: int, fps: float) -> str:
+        """
+        Convert frame number to timestamp format HH:MM:SS.mmm
+        
+        Args:
+            frame_number: Frame number (0-indexed)
+            fps: Frames per second of the video
+            
+        Returns:
+            Timestamp string in format HH:MM:SS.mmm
+        """
+        total_seconds = frame_number / fps
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        seconds = int(total_seconds % 60)
+        milliseconds = int((total_seconds % 1) * 1000)
+        
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
+    
+    def save_detections_to_json(self, output_path: Path, media_path: Path) -> bool:
+        """
+        Save all collected detections to a JSON file.
+        
+        Args:
+            output_path: Path for the JSON output file
+            media_path: Path of the processed media file
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            output_data = {
+                "source_file": str(media_path.name),
+                "total_detections": len(self.all_detections),
+                "detections": self.all_detections
+            }
+            
+            with open(output_path, 'w') as f:
+                json.dump(output_data, f, indent=2)
+            
+            return True
+        except Exception as e:
+            print(f"  ✗ Error saving detections to JSON: {e}")
+            return False
     
     def apply_intense_blur(self, image: np.ndarray, kernel_size: int, passes: int = 3) -> np.ndarray:
         """
@@ -323,6 +438,7 @@ class HumanBlurProcessor:
     def process_image(self, image_path: Path, output_path: Path = None, confidence: float = 0.5) -> bool:
         """
         Process a single image: detect humans and blur them using segmentation.
+        Also detect background objects if enabled.
         
         Args:
             image_path: Path to input image
@@ -350,6 +466,13 @@ class HumanBlurProcessor:
                 return False
             
             print(f"  Detected {len(detections)} human(s) in {image_path.name}")
+            
+            # Detect background objects (excluding humans) if enabled
+            if self.enable_object_detection:
+                print(f"  Detecting background objects...")
+                object_detections = self.detect_background_objects(image, confidence)
+                self.all_detections.extend(object_detections)
+                print(f"  ✓ Detected {len(object_detections)} background object(s)")
             
             # Separate detections into those with masks and those without
             detections_with_masks = [(bbox, mask) for bbox, mask in detections if mask is not None and self.use_segmentation]
@@ -396,6 +519,12 @@ class HumanBlurProcessor:
             
             # Save result
             if self.save_image(result, output_path, image_path):
+                # Save object detections to JSON if enabled
+                if self.enable_object_detection and self.all_detections:
+                    json_path = image_path.parent / f"{image_path.stem}-detections.json"
+                    if self.save_detections_to_json(json_path, image_path):
+                        print(f"  ✓ Saved {len(self.all_detections)} detection(s) to {json_path.name}")
+                
                 # Calculate and display processing time
                 processing_time = time.time() - start_time
                 print(f"  Processing time: {processing_time:.2f} seconds")
@@ -564,6 +693,17 @@ class HumanBlurProcessor:
                 # Detect humans with segmentation masks
                 detections = self.detect_humans_with_masks(frame, confidence)
                 
+                # Detect background objects (excluding humans) if enabled
+                if self.enable_object_detection:
+                    timestamp = self.format_timestamp(frame_count - 1, fps)  # frame_count is 1-indexed
+                    object_detections = self.detect_background_objects(
+                        frame, 
+                        confidence, 
+                        frame_number=frame_count,
+                        timestamp=timestamp
+                    )
+                    self.all_detections.extend(object_detections)
+                
                 if detections:
                     processed_count += 1
                     
@@ -619,6 +759,12 @@ class HumanBlurProcessor:
                 # Clean up audio file
                 if audio_path.exists():
                     audio_path.unlink()
+            
+            # Save object detections to JSON if enabled
+            if self.enable_object_detection and self.all_detections:
+                json_path = video_path.parent / f"{video_path.stem}-detections.json"
+                if self.save_detections_to_json(json_path, video_path):
+                    print(f"  ✓ Saved {len(self.all_detections)} detection(s) to {json_path.name}")
             
             # Calculate and display processing time
             processing_time = time.time() - start_time
@@ -692,6 +838,7 @@ class HumanBlurProcessor:
         # Process images first
         for image_path in image_files:
             current += 1
+            self.all_detections = []  # Reset detections for each file
             print(f"Processing [{current}/{total_files}] (Image): {image_path.name}")
             if self.process_image(image_path, confidence=confidence):
                 successful += 1
@@ -700,6 +847,7 @@ class HumanBlurProcessor:
         # Process videos
         for video_path in video_files:
             current += 1
+            self.all_detections = []  # Reset detections for each file
             print(f"Processing [{current}/{total_files}] (Video): {video_path.name}")
             if self.process_video(video_path, confidence=confidence):
                 successful += 1
@@ -809,9 +957,30 @@ Note: Audio preservation in videos requires ffmpeg to be installed.
     )
     
     parser.add_argument(
+        '--enable-detection',
+        action='store_true',
+        default=True,
+        help='Enable background object detection (default: enabled)'
+    )
+    
+    parser.add_argument(
+        '--disable-detection',
+        action='store_true',
+        help='Disable background object detection'
+    )
+    
+    parser.add_argument(
+        '--detection-model',
+        type=str,
+        default='yolov8m.pt',
+        choices=['yolov8n.pt', 'yolov8s.pt', 'yolov8m.pt', 'yolov8l.pt', 'yolov8x.pt'],
+        help='YOLO model for object detection (default: yolov8m.pt for better accuracy)'
+    )
+    
+    parser.add_argument(
         '-v', '--version',
         action='version',
-        version='%(prog)s 3.0.0 - Enhanced with Segmentation and Video Support'
+        version='%(prog)s 3.1.0 - Enhanced with Object Detection'
     )
     
     args = parser.parse_args()
@@ -841,16 +1010,21 @@ Note: Audio preservation in videos requires ffmpeg to be installed.
             print("Install with: pip install pillow-heif")
             print()
     
+    # Determine if object detection should be enabled
+    enable_detection = args.enable_detection and not args.disable_detection
+    
     # Initialize processor
     print("\n" + "="*70)
-    print("Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)")
+    print("Human Blur Tool v3.1 - With Background Object Detection")
     print("="*70 + "\n")
     
     processor = HumanBlurProcessor(
         model_name=args.model, 
         blur_intensity=args.blur,
         blur_passes=args.passes,
-        mask_type=args.mask_type
+        mask_type=args.mask_type,
+        enable_object_detection=enable_detection,
+        detection_model=args.detection_model
     )
     
     # Process based on input type
