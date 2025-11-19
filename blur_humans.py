@@ -37,7 +37,7 @@ class HumanBlurProcessor:
     SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
     SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = True, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = True, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, progress_callback=None):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -50,6 +50,7 @@ class HumanBlurProcessor:
             detection_model: YOLO model for object detection (default: yolov8m.pt)
             filename_suffix: Custom suffix for output filenames (default: '-background')
             keep_audio: Keep audio in output videos (default: True)
+            progress_callback: Optional callback function for progress updates (receives current, total)
         """
         self.blur_intensity = blur_intensity if blur_intensity % 2 == 1 else blur_intensity + 1
         self.blur_passes = max(1, blur_passes)
@@ -59,6 +60,7 @@ class HumanBlurProcessor:
         self.all_detections = []  # Store all object detections
         self.filename_suffix = filename_suffix  # Store custom filename suffix
         self.keep_audio = keep_audio  # Store audio handling preference
+        self.progress_callback = progress_callback  # Store progress callback
         
         print(f"Loading YOLO model: {model_name}...")
         print(f"Segmentation mode: {'Enabled (Lasso effect)' if self.use_segmentation else 'Disabled (Box blur)'}")
@@ -691,6 +693,10 @@ class HumanBlurProcessor:
                     break
                 
                 frame_count += 1
+                
+                # Call progress callback if provided
+                if self.progress_callback:
+                    self.progress_callback(frame_count, total_frames)
                 
                 # Show progress every 10 frames or at the end
                 if frame_count % 10 == 0 or frame_count == total_frames:
