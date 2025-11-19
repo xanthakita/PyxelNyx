@@ -1,21 +1,29 @@
 
-# Human Blur Tool v3.0 🎭
+# Human Blur Tool v3.0 Enhanced 🎭
 
-A Python tool that automatically detects and masks/blurs humans in **images and videos** using **instance segmentation** for precise, lasso-style processing. Built with YOLOv8 segmentation models for accurate human shape detection. Available as both **CLI** and **GUI** applications.
+A Python tool that automatically detects and masks/blurs humans in **images and videos** using **instance segmentation** for precise, lasso-style processing. Built with YOLOv8 segmentation models for accurate human shape detection. Available as both **CLI** and **enhanced GUI** applications with **cross-platform executable support** for Windows, macOS, and Linux.
 
-## What's New in v3.0 ✨
+## What's New in v3.0 Enhanced ✨
 
-- 🎬 **Video Processing Support (NEW!)**: Process .mp4 and .mov video files frame-by-frame
-- 🔊 **Audio Preservation (NEW!)**: Automatically preserves audio tracks when ffmpeg is available
-- 📊 **Progress Indicators (NEW!)**: Real-time frame-by-frame progress for video processing
-- 🎚️ **Media Type Filter (NEW!)**: Process only images, only videos, or both in directories
+### GUI Enhancements (NEW!)
+- 🎨 **Production-Ready GUI**: Professional interface suitable for non-technical users
+- ✅ **File Validation**: Smart format validation with helpful error messages
+- 📊 **Dual Progress Bars**: Individual file + overall batch progress tracking
+- ❓ **Built-in Help**: Comprehensive help dialog for GUI and CLI
+- 🖼️ **Logo Branding**: Professional organizational logo integration
+- 🚀 **Open Result**: Instant option to view processed files
+- 🎯 **Media Filter**: Choose images only, videos only, or both
+- 📦 **Executable Support**: Build standalone apps for Windows, macOS, Linux
+
+### Core Features
+- 🎬 **Video Processing Support**: Process .mp4 and .mov video files frame-by-frame
+- 🔊 **Audio Preservation**: Automatically preserves audio tracks when ffmpeg is available
 - 🖤 **Black Mask Mode**: Solid black mask for complete privacy protection (default)
-- 🖥️ **GUI Interface**: Easy-to-use graphical interface with tkinter
 - 🎨 **Dual Masking Options**: Choose between black mask or blur mode
-- 🎯 **Segmentation-Based Processing (Lasso Effect)**: Uses YOLOv8 segmentation models to process only the actual human silhouette
-- 🌀 **Intense Multi-Pass Blur**: Significantly stronger blur with multi-pass algorithm (for blur mode)
+- 🎯 **Segmentation-Based Processing (Lasso Effect)**: Uses YOLOv8 segmentation models
+- 🌀 **Intense Multi-Pass Blur**: Significantly stronger blur with multi-pass algorithm
 - 📱 **HEIC Support**: Full support for Apple's HEIC/HEIF image format
-- 🖼️ **Universal Format Support**: Enhanced format handling with PIL fallback for maximum compatibility
+- 🖼️ **Universal Format Support**: Enhanced format handling with PIL fallback
 - ⚡ **Improved Processing**: Better error handling and format conversion
 
 ## Features ✨
@@ -99,18 +107,34 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
 ### GUI Interface (Easiest Way!)
 
-Launch the graphical interface for easy point-and-click operation:
+Launch the **enhanced** graphical interface for easy point-and-click operation:
 
 ```bash
 python gui.py
 ```
 
 The GUI provides:
-- 📂 **File/Folder Browser**: Easy selection of images or directories
+- 📂 **File/Folder Browser**: Easy selection of images, videos, or directories
 - 🎚️ **Mask Type Toggle**: Switch between Black Mask (default) and Blur modes
 - ⚙️ **Adjustable Settings**: Blur intensity, passes, confidence, and model selection
-- 📊 **Progress Indicator**: Real-time processing status
+- 📊 **Dual Progress Indicators**: Individual file and overall batch progress
+- 🎯 **Media Type Filter**: Choose images only, videos only, or both for folders
+- ✅ **File Validation**: Automatic validation with helpful error messages
+- ❓ **Built-in Help**: Comprehensive help dialog for GUI and CLI usage
+- 🖼️ **Logo Branding**: Professional interface with organizational logo
+- 🚀 **Open Result**: Option to immediately view processed files
 - ✅ **User-Friendly**: No command-line knowledge required
+- 🌍 **Cross-Platform**: Works on Windows, macOS, and Linux
+
+**New in Enhanced Version:**
+- Smart file format validation
+- Dual progress bars for batch operations
+- Help dialog with complete instructions
+- Open processed file after completion
+- Media type filtering for folders
+- Improved error handling and messaging
+
+See `BUILD_EXECUTABLE.md` for instructions on building standalone executables for distribution.
 
 ### CLI Interface (Command Line)
 
@@ -525,20 +549,30 @@ blur_humans.py
 
 ## Future Enhancements 🔮
 
+### Completed ✅
 - [x] **Segmentation-based blur** (lasso effect) ✅ v2.0
 - [x] **Intense multi-pass blur** ✅ v2.0
 - [x] **HEIC format support** ✅ v2.0
 - [x] **Universal format support** ✅ v2.0
 - [x] **Black mask mode** ✅ v2.1
 - [x] **GUI interface** ✅ v2.1
-- [ ] Video processing support
+- [x] **Video processing support** ✅ v3.0
+- [x] **Enhanced GUI with validation** ✅ v3.0 Enhanced
+- [x] **Progress tracking** ✅ v3.0 Enhanced
+- [x] **Help system** ✅ v3.0 Enhanced
+- [x] **Executable building support** ✅ v3.0 Enhanced
+
+### Planned 🔜
+- [ ] GUI preview before processing
+- [ ] Drag & drop file support
 - [ ] Alternative anonymization methods (pixelation, color masking)
 - [ ] Face-only detection and masking
 - [ ] API/library mode for integration
-- [ ] Custom output directory
+- [ ] Custom output directory selection
 - [ ] Background replacement options
-- [ ] Batch export with custom naming
-- [ ] GUI preview before processing
+- [ ] Batch export with custom naming patterns
+- [ ] Real-time camera feed processing
+- [ ] Multi-language support
 
 ## Troubleshooting 🔧
 
@@ -588,9 +622,31 @@ If you see "Box blur" instead of "Lasso blur":
 
 ## Version History 📋
 
-### v2.1.0 (Current) - Black Mask & GUI
+### v3.0 Enhanced (Current) - Professional GUI & Executables
+- ✨ **New**: Enhanced GUI with comprehensive features for non-technical users
+- ✨ **New**: File format validation with custom error messaging
+- ✨ **New**: Dual progress bars (individual file + overall batch)
+- ✨ **New**: Built-in help dialog with GUI and CLI instructions
+- ✨ **New**: Logo integration for professional branding
+- ✨ **New**: Open processed file option after completion
+- ✨ **New**: Media type filtering for folder processing
+- ✨ **New**: Cross-platform executable building support
+- 📝 **New**: `BUILD_EXECUTABLE.md` - Complete guide for creating executables
+- 📝 **New**: `GUI_ENHANCEMENTS_SUMMARY.md` - Detailed feature documentation
+- ⚡ **Enhanced**: Better error handling and user messaging
+- ⚡ **Enhanced**: Improved UI layout and organization
+- 🔧 **Changed**: GUI now production-ready for end users
+- ✅ **Maintained**: 100% CLI functionality preserved
+
+### v3.0 (Previous) - Video Support
+- ✨ **New**: Video processing (.mp4, .mov)
+- ✨ **New**: Audio preservation with ffmpeg
+- ✨ **New**: Frame-by-frame progress indicators
+- ✨ **New**: Media type filtering
+
+### v2.1.0 - Black Mask & Basic GUI
 - ✨ **New**: Black mask mode for complete anonymization
-- ✨ **New**: GUI interface with tkinter for easy use
+- ✨ **New**: Basic GUI interface with tkinter
 - ✨ **New**: Mask type selection (black or blur)
 - 🔧 **Changed**: Default mask type to 'black' (was blur)
 - ⚡ **Enhanced**: Better user experience with both CLI and GUI options
@@ -633,5 +689,8 @@ For issues or questions:
 
 ---
 
-**Made with ❤️ for privacy-preserving background analysis**
-**v2.1 - Now with Black Mask Mode & GUI Interface**
+**Made with ❤️ for privacy-preserving media processing**
+**v3.0 Enhanced - Professional GUI with Cross-Platform Executable Support**
+
+For support or questions about GUI enhancements or executable building:
+**apps@globalemancipation.ngo**

@@ -37,7 +37,7 @@ class HumanBlurProcessor:
     SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
     SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = True, detection_model: str = 'yolov8m.pt'):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = True, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -48,6 +48,8 @@ class HumanBlurProcessor:
             mask_type: Type of masking to apply ('blur' or 'black', default: 'black')
             enable_object_detection: Enable background object detection (default: True)
             detection_model: YOLO model for object detection (default: yolov8m.pt)
+            filename_suffix: Custom suffix for output filenames (default: '-background')
+            keep_audio: Keep audio in output videos (default: True)
         """
         self.blur_intensity = blur_intensity if blur_intensity % 2 == 1 else blur_intensity + 1
         self.blur_passes = max(1, blur_passes)
@@ -55,6 +57,8 @@ class HumanBlurProcessor:
         self.use_segmentation = '-seg' in model_name
         self.enable_object_detection = enable_object_detection
         self.all_detections = []  # Store all object detections
+        self.filename_suffix = filename_suffix  # Store custom filename suffix
+        self.keep_audio = keep_audio  # Store audio handling preference
         
         print(f"Loading YOLO model: {model_name}...")
         print(f"Segmentation mode: {'Enabled (Lasso effect)' if self.use_segmentation else 'Disabled (Box blur)'}")
@@ -515,7 +519,7 @@ class HumanBlurProcessor:
                 # Convert HEIC to JPG for output
                 if output_suffix.lower() in {'.heic', '.heif'}:
                     output_suffix = '.jpg'
-                output_path = image_path.parent / f"{image_path.stem}-background{output_suffix}"
+                output_path = image_path.parent / f"{image_path.stem}{self.filename_suffix}{output_suffix}"
             
             # Save result
             if self.save_image(result, output_path, image_path):
@@ -640,13 +644,13 @@ class HumanBlurProcessor:
             
             # Determine output path
             if output_path is None:
-                output_path = video_path.parent / f"{video_path.stem}-background{video_path.suffix}"
+                output_path = video_path.parent / f"{video_path.stem}{self.filename_suffix}{video_path.suffix}"
             
             # Check for ffmpeg availability for audio processing
             ffmpeg_available = self.check_ffmpeg_available()
             
-            # Try to extract audio if ffmpeg is available
-            if ffmpeg_available:
+            # Try to extract audio if ffmpeg is available and user wants to keep audio
+            if ffmpeg_available and self.keep_audio:
                 audio_path = Path(tempfile.mktemp(suffix='.aac'))
                 print(f"  Extracting audio...")
                 has_audio = self.extract_audio(video_path, audio_path)
@@ -654,6 +658,8 @@ class HumanBlurProcessor:
                     print(f"  ✓ Audio extracted successfully")
                 else:
                     print(f"  ℹ No audio track found or unable to extract")
+            elif not self.keep_audio:
+                print(f"  ℹ Audio removal requested - output will have no audio")
             else:
                 print(f"  ⚠ ffmpeg not available - audio will not be preserved")
                 print(f"  ℹ Install ffmpeg to enable audio preservation")

@@ -58,9 +58,15 @@ GETTING STARTED
    - Confidence: Detection sensitivity (0.1-1.0, default 0.5)
    - Model: Choose speed vs accuracy trade-off
 
-4. Click "Process Media" button
+4. Configure Output Settings (Optional):
+   - Filename Suffix: Customize the suffix added to output files
+     (e.g., '-background', '-blurred', '-processed')
+   - Audio Handling: Choose whether to keep or remove audio from videos
+     (Requires ffmpeg for audio preservation)
 
-5. View progress and results
+5. Click "Process Media" button
+
+6. View progress and results
 
 SUPPORTED FORMATS
 -----------------
@@ -69,10 +75,11 @@ Videos: .mp4, .mov
 
 OUTPUT
 ------
-Processed files are saved with "-background" suffix:
-- photo.jpg → photo-background.jpg
-- video.mp4 → video-background.mp4
+Processed files are saved with a custom suffix (default "-background"):
+- photo.jpg → photo[suffix].jpg
+- video.mp4 → video[suffix].mp4
 
+You can customize this suffix in the Output Settings section.
 Original files are never modified!
 
 SINGLE FILE PROCESSING
@@ -229,6 +236,8 @@ class HumanBlurGUI:
         self.confidence = tk.DoubleVar(value=0.5)
         self.model_name = tk.StringVar(value="yolov8n-seg.pt")
         self.media_type = tk.StringVar(value="both")
+        self.keep_audio = tk.BooleanVar(value=True)  # New: Audio handling option
+        self.filename_suffix = tk.StringVar(value="-background")  # New: Custom filename suffix
         self.processing = False
         self.last_output_path = None
         
@@ -414,7 +423,7 @@ class HumanBlurGUI:
         
         # Model Selection
         model_frame = ttk.Frame(advanced_frame)
-        model_frame.pack(fill=tk.X)
+        model_frame.pack(fill=tk.X, pady=(0, 10))
         
         ttk.Label(model_frame, text="Model:", width=12).pack(side=tk.LEFT)
         model_combo = ttk.Combobox(
@@ -432,6 +441,41 @@ class HumanBlurGUI:
         )
         model_combo.pack(side=tk.LEFT)
         model_combo.bind('<<ComboboxSelected>>', self.update_model_selection)
+        
+        # Output Settings Section
+        output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="10")
+        output_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        # Custom Filename Suffix
+        suffix_frame = ttk.Frame(output_frame)
+        suffix_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(suffix_frame, text="Filename suffix:", width=12).pack(side=tk.LEFT)
+        suffix_entry = ttk.Entry(suffix_frame, textvariable=self.filename_suffix, width=20)
+        suffix_entry.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(
+            suffix_frame, 
+            text="(e.g., '-background', '-blurred', '-processed')", 
+            font=("Arial", 8), 
+            foreground="gray"
+        ).pack(side=tk.LEFT)
+        
+        # Audio Handling Option (for videos)
+        audio_frame = ttk.Frame(output_frame)
+        audio_frame.pack(fill=tk.X)
+        
+        self.audio_checkbox = ttk.Checkbutton(
+            audio_frame,
+            text="🔊 Keep audio in output videos (requires ffmpeg)",
+            variable=self.keep_audio
+        )
+        self.audio_checkbox.pack(side=tk.LEFT)
+        ttk.Label(
+            audio_frame,
+            text="(Uncheck to remove audio from videos)",
+            font=("Arial", 8),
+            foreground="gray"
+        ).pack(side=tk.LEFT, padx=(10, 0))
         
         # Action Buttons Section
         action_frame = ttk.Frame(content_frame)
@@ -628,12 +672,14 @@ class HumanBlurGUI:
             # Get actual model name (remove display text if present)
             model = self.model_name.get().split()[0]  # Get first part before space
             
-            # Create processor
+            # Create processor with new parameters
             processor = HumanBlurProcessor(
                 model_name=model,
                 blur_intensity=blur_intensity,
                 blur_passes=self.blur_passes.get(),
-                mask_type=self.mask_type.get()
+                mask_type=self.mask_type.get(),
+                filename_suffix=self.filename_suffix.get(),
+                keep_audio=self.keep_audio.get()
             )
             
             # Process based on input type
@@ -651,11 +697,11 @@ class HumanBlurGUI:
                 success = processor.process_image(input_path, confidence=self.confidence.get()) if input_path.suffix.lower() in self.supported_image_formats else processor.process_video(input_path, confidence=self.confidence.get())
                 
                 if success:
-                    # Determine output path
+                    # Determine output path using custom filename suffix
                     output_suffix = input_path.suffix
                     if output_suffix.lower() in {'.heic', '.heif'}:
                         output_suffix = '.jpg'
-                    output_path = input_path.parent / f"{input_path.stem}-background{output_suffix}"
+                    output_path = input_path.parent / f"{input_path.stem}{self.filename_suffix.get()}{output_suffix}"
                     self.last_output_path = output_path
                     
                     self.update_status(f"✓ Successfully processed {input_path.name}", "green")
@@ -727,7 +773,7 @@ class HumanBlurGUI:
                 messagebox.showinfo(
                     "Batch Processing Complete", 
                     f"Successfully processed {successful} out of {total_files} media files.\n\n"
-                    f"Processed files are saved with '-background' suffix in the same folder."
+                    f"Processed files are saved with '{self.filename_suffix.get()}' suffix in the same folder."
                 )
             
             else:
