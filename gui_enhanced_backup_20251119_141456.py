@@ -423,7 +423,7 @@ class HumanBlurGUI:
         
         # Model Selection
         model_frame = ttk.Frame(advanced_frame)
-        model_frame.pack(fill=tk.X)
+        model_frame.pack(fill=tk.X, pady=(0, 10))
         
         ttk.Label(model_frame, text="Model:", width=12).pack(side=tk.LEFT)
         model_combo = ttk.Combobox(
@@ -514,8 +514,7 @@ class HumanBlurGUI:
         ttk.Label(progress_frame, text="Current file:", font=("Arial", 9)).pack(anchor=tk.W)
         self.file_progress = ttk.Progressbar(
             progress_frame,
-            mode='determinate',
-            variable=self.current_file_progress,
+            mode='indeterminate',
             length=400
         )
         self.file_progress.pack(fill=tk.X, pady=(0, 10))
@@ -637,19 +636,6 @@ class HumanBlurGUI:
         """Update status label."""
         self.status_label.config(text=message, foreground=color)
     
-    def update_progress(self, current, total):
-        """
-        Update progress bar safely from processing thread.
-        
-        Args:
-            current: Current progress value
-            total: Total progress value
-        """
-        if total > 0:
-            progress_pct = (current / total) * 100
-            # Use root.after to safely update GUI from thread
-            self.root.after(0, lambda: self.current_file_progress.set(progress_pct))
-    
     def open_file(self, file_path: Path):
         """
         Open a file using the system's default application.
@@ -693,8 +679,7 @@ class HumanBlurGUI:
                 blur_passes=self.blur_passes.get(),
                 mask_type=self.mask_type.get(),
                 filename_suffix=self.filename_suffix.get(),
-                keep_audio=self.keep_audio.get(),
-                progress_callback=self.update_progress
+                keep_audio=self.keep_audio.get()
             )
             
             # Process based on input type
@@ -708,12 +693,8 @@ class HumanBlurGUI:
                 # Process single file
                 self.current_file_name.set(f"Processing: {input_path.name}")
                 self.update_status(f"Processing {input_path.name}...", "blue")
-                self.current_file_progress.set(0)  # Reset progress
                 
                 success = processor.process_image(input_path, confidence=self.confidence.get()) if input_path.suffix.lower() in self.supported_image_formats else processor.process_video(input_path, confidence=self.confidence.get())
-                
-                # Set to 100% when done
-                self.current_file_progress.set(100)
                 
                 if success:
                     # Determine output path using custom filename suffix
@@ -765,7 +746,6 @@ class HumanBlurGUI:
                     self.overall_progress.set(progress_pct)
                     self.current_file_name.set(f"[{idx}/{total_files}] {file_path.name}")
                     self.update_status(f"Processing {idx}/{total_files}: {file_path.name}", "blue")
-                    self.current_file_progress.set(0)  # Reset file progress
                     
                     # Reset processor's detection list for each file
                     processor.all_detections = []
@@ -776,9 +756,6 @@ class HumanBlurGUI:
                             success = processor.process_image(file_path, confidence=self.confidence.get())
                         else:
                             success = processor.process_video(file_path, confidence=self.confidence.get())
-                        
-                        # Set file progress to 100% when done
-                        self.current_file_progress.set(100)
                         
                         if success:
                             successful += 1
@@ -811,6 +788,7 @@ class HumanBlurGUI:
         
         finally:
             self.processing = False
+            self.file_progress.stop()
             self.process_button.config(state="normal")
     
     def prompt_open_file(self, output_path: Path):
@@ -841,7 +819,7 @@ class HumanBlurGUI:
         
         self.processing = True
         self.process_button.config(state="disabled")
-        self.current_file_progress.set(0)
+        self.file_progress.start()
         self.overall_progress.set(0)
         self.current_file_name.set("")
         self.update_status("Processing...", "blue")

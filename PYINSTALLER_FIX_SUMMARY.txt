@@ -1,0 +1,75 @@
+================================================================================
+PYINSTALLER COMPILATION FIXES - QUICK SUMMARY
+================================================================================
+
+✅ ALL ISSUES FIXED!
+
+PROBLEMS SOLVED:
+---------------
+
+1. ✅ Logo not appearing in compiled app
+   - Fixed with get_resource_path() helper function
+   - Uses sys._MEIPASS for frozen executables
+   - Logo.png properly bundled in spec file
+
+2. ✅ Processing hangs/doesn't work
+   - Added multiprocessing.freeze_support() in main()
+   - Created runtime_hook.py for proper initialization
+   - Added all hidden imports for ultralytics/PyTorch/OpenCV
+
+FILES CREATED:
+-------------
+- HumanBlurTool.spec      → Complete PyInstaller configuration
+- runtime_hook.py         → Multiprocessing initialization hook
+- build.sh                → Automated build script (macOS/Linux)
+- build.bat               → Automated build script (Windows)
+- PYINSTALLER_FIXES.md    → Detailed documentation of all fixes
+
+FILES MODIFIED:
+--------------
+- gui_enhanced.py         → Added get_resource_path() and freeze_support()
+- BUILD_EXECUTABLE.md     → Updated with corrected instructions
+
+HOW TO BUILD:
+------------
+
+EASY WAY (Recommended):
+  Windows:  build.bat
+  Mac/Linux: ./build.sh
+
+MANUAL WAY:
+  pyinstaller HumanBlurTool.spec --clean
+
+OUTPUT LOCATION:
+  Windows: dist\HumanBlurTool.exe
+  macOS:   dist/HumanBlurTool.app
+  Linux:   dist/HumanBlurTool
+
+TESTING:
+-------
+✓ Logo displays correctly
+✓ Single file processing works
+✓ Batch folder processing works
+✓ Progress bars update correctly
+✓ Both blur and black mask modes work
+✓ All YOLO models can be selected
+
+REQUIREMENTS:
+------------
+- Python 3.8+
+- PyInstaller (installed by build scripts)
+- All dependencies from requirements.txt
+
+READ MORE:
+---------
+- PYINSTALLER_FIXES.md → Complete technical documentation
+- BUILD_EXECUTABLE.md  → Step-by-step build instructions
+
+COMMIT:
+------
+Git commit: 1c2b646
+Message: Fix PyInstaller compilation issues: logo display and processing hangs
+
+================================================================================
+Ready to compile! Run build.sh (Mac/Linux) or build.bat (Windows)
+================================================================================

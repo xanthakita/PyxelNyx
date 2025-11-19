@@ -16,6 +16,26 @@ from blur_humans import HumanBlurProcessor
 from PIL import Image, ImageTk
 
 
+def get_resource_path(relative_path):
+    """
+    Get absolute path to resource, works for both development and PyInstaller frozen mode.
+    
+    Args:
+        relative_path: Relative path to resource file
+        
+    Returns:
+        Absolute path to resource
+    """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = Path(sys._MEIPASS)
+    except AttributeError:
+        # Running in normal Python environment
+        base_path = Path(__file__).parent
+    
+    return base_path / relative_path
+
+
 class HelpDialog:
     """Help dialog showing instructions for both GUI and CLI usage."""
     
@@ -225,8 +245,10 @@ class HumanBlurGUI:
         """Initialize the enhanced GUI application."""
         self.root = root
         self.root.title("Human Blur Tool v3.0 - Enhanced")
-        self.root.geometry("750x700")
-        self.root.resizable(False, False)
+        # Set initial size and minimum size - compact to fit on standard screens
+        self.root.geometry("1000x720")
+        self.root.minsize(950, 650)
+        self.root.resizable(True, True)
         
         # Variables
         self.input_path = tk.StringVar()
@@ -245,6 +267,7 @@ class HumanBlurGUI:
         self.current_file_progress = tk.DoubleVar(value=0)
         self.overall_progress = tk.DoubleVar(value=0)
         self.current_file_name = tk.StringVar(value="")
+        self.current_file_percentage = tk.StringVar(value="0%")  # Progress percentage text
         
         # Supported formats
         self.supported_image_formats = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp', '.heic', '.heif'}
@@ -262,10 +285,10 @@ class HumanBlurGUI:
         
         # Logo and Title Frame
         header_frame = ttk.Frame(main_container)
-        header_frame.pack(fill=tk.X, padx=10, pady=10)
+        header_frame.pack(fill=tk.X, padx=10, pady=(5, 3))
         
         # Try to load and display logo
-        logo_path = Path(__file__).parent / "logo.png"
+        logo_path = get_resource_path("logo.png")
         if logo_path.exists():
             try:
                 logo_img = Image.open(logo_path)
@@ -296,15 +319,22 @@ class HumanBlurGUI:
         subtitle_label.pack(anchor=tk.W)
         
         # Separator
-        ttk.Separator(main_container, orient='horizontal').pack(fill=tk.X, padx=10, pady=5)
+        ttk.Separator(main_container, orient='horizontal').pack(fill=tk.X, padx=10, pady=3)
         
-        # Main content frame with scrollbar capability
+        # Main content frame with grid layout
         content_frame = ttk.Frame(main_container)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(3, 8))
         
-        # File/Folder Selection Section
-        input_section = ttk.LabelFrame(content_frame, text="Input Selection", padding="10")
-        input_section.pack(fill=tk.X, pady=(0, 10))
+        # Configure grid columns with equal weight for resizing
+        content_frame.columnconfigure(0, weight=1)
+        content_frame.columnconfigure(1, weight=1)
+        # Configure rows to expand
+        content_frame.rowconfigure(1, weight=1)
+        content_frame.rowconfigure(2, weight=1)
+        
+        # ========== File/Folder Selection Section (Full Width - Row 0) ==========
+        input_section = ttk.LabelFrame(content_frame, text="Input Selection", padding="8")
+        input_section.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 6), padx=5)
         
         ttk.Label(input_section, text="Select file or folder to process:").pack(anchor=tk.W, pady=(0, 5))
         
@@ -336,12 +366,14 @@ class HumanBlurGUI:
             media_filter_frame, text="Videos Only", variable=self.media_type, value="videos"
         ).pack(side=tk.LEFT, padx=5)
         
-        # Mask Type Selection Section
-        mask_section = ttk.LabelFrame(content_frame, text="Processing Mode", padding="10")
-        mask_section.pack(fill=tk.X, pady=(0, 10))
+        # ========== ROW 1: Processing Mode (Left) | Blur Settings (Right) ==========
+        
+        # Processing Mode Section (Left Column - Row 1)
+        mask_section = ttk.LabelFrame(content_frame, text="Processing Mode", padding="8")
+        mask_section.grid(row=1, column=0, sticky="nsew", pady=(0, 6), padx=(5, 3))
         
         mask_frame = ttk.Frame(mask_section)
-        mask_frame.pack(fill=tk.X)
+        mask_frame.pack(fill=tk.BOTH, expand=True)
         
         ttk.Radiobutton(
             mask_frame, 
@@ -359,15 +391,15 @@ class HumanBlurGUI:
             command=self.update_blur_controls
         ).pack(anchor=tk.W, pady=2)
         
-        # Blur Settings Section (only for blur mode)
-        blur_settings_frame = ttk.LabelFrame(content_frame, text="Blur Settings (Blur Mode Only)", padding="10")
-        blur_settings_frame.pack(fill=tk.X, pady=(0, 10))
+        # Blur Settings Section (Right Column - Row 1)
+        blur_settings_frame = ttk.LabelFrame(content_frame, text="Blur Settings (Blur Mode Only)", padding="8")
+        blur_settings_frame.grid(row=1, column=1, sticky="nsew", pady=(0, 6), padx=(3, 5))
         
         # Blur Intensity
         intensity_frame = ttk.Frame(blur_settings_frame)
         intensity_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(intensity_frame, text="Intensity:", width=12).pack(side=tk.LEFT)
+        ttk.Label(intensity_frame, text="Intensity:", width=10).pack(side=tk.LEFT)
         self.intensity_slider = ttk.Scale(
             intensity_frame, 
             from_=51, 
@@ -386,7 +418,7 @@ class HumanBlurGUI:
         passes_frame = ttk.Frame(blur_settings_frame)
         passes_frame.pack(fill=tk.X)
         
-        ttk.Label(passes_frame, text="Passes:", width=12).pack(side=tk.LEFT)
+        ttk.Label(passes_frame, text="Passes:", width=10).pack(side=tk.LEFT)
         self.passes_spinbox = ttk.Spinbox(
             passes_frame, 
             from_=1, 
@@ -398,15 +430,17 @@ class HumanBlurGUI:
         ttk.Label(passes_frame, text="(More passes = stronger blur)", 
                  font=("Arial", 8), foreground="gray").pack(side=tk.LEFT, padx=(10, 0))
         
-        # Advanced Settings Section
-        advanced_frame = ttk.LabelFrame(content_frame, text="Advanced Settings", padding="10")
-        advanced_frame.pack(fill=tk.X, pady=(0, 10))
+        # ========== ROW 2: Advanced Settings (Left) | Output Settings (Right) ==========
+        
+        # Advanced Settings Section (Left Column - Row 2)
+        advanced_frame = ttk.LabelFrame(content_frame, text="Advanced Settings", padding="8")
+        advanced_frame.grid(row=2, column=0, sticky="nsew", pady=(0, 6), padx=(5, 3))
         
         # Confidence
         confidence_frame = ttk.Frame(advanced_frame)
         confidence_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(confidence_frame, text="Confidence:", width=12).pack(side=tk.LEFT)
+        ttk.Label(confidence_frame, text="Confidence:", width=10).pack(side=tk.LEFT)
         self.confidence_slider = ttk.Scale(
             confidence_frame, 
             from_=0.1, 
@@ -425,61 +459,61 @@ class HumanBlurGUI:
         model_frame = ttk.Frame(advanced_frame)
         model_frame.pack(fill=tk.X)
         
-        ttk.Label(model_frame, text="Model:", width=12).pack(side=tk.LEFT)
+        ttk.Label(model_frame, text="Model:", width=10).pack(side=tk.LEFT)
         model_combo = ttk.Combobox(
             model_frame,
             textvariable=self.model_name,
             values=[
-                "yolov8n-seg.pt (Fastest)",
-                "yolov8s-seg.pt (Balanced)",
-                "yolov8m-seg.pt (Accurate)",
-                "yolov8l-seg.pt (Very Accurate)",
-                "yolov8x-seg.pt (Maximum Accuracy)"
+                "yolov8n-seg.pt",
+                "yolov8s-seg.pt",
+                "yolov8m-seg.pt",
+                "yolov8l-seg.pt",
+                "yolov8x-seg.pt"
             ],
-            width=30,
+            width=18,
             state="readonly"
         )
-        model_combo.pack(side=tk.LEFT)
-        model_combo.bind('<<ComboboxSelected>>', self.update_model_selection)
+        model_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        model_combo.current(0)
         
-        # Output Settings Section
-        output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="10")
-        output_frame.pack(fill=tk.X, pady=(0, 10))
+        # Output Settings Section (Right Column - Row 2)
+        output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="8")
+        output_frame.grid(row=2, column=1, sticky="nsew", pady=(0, 6), padx=(3, 5))
         
         # Custom Filename Suffix
         suffix_frame = ttk.Frame(output_frame)
         suffix_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(suffix_frame, text="Filename suffix:", width=12).pack(side=tk.LEFT)
-        suffix_entry = ttk.Entry(suffix_frame, textvariable=self.filename_suffix, width=20)
-        suffix_entry.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(suffix_frame, text="Filename suffix:").pack(anchor=tk.W, pady=(0, 3))
+        suffix_entry = ttk.Entry(suffix_frame, textvariable=self.filename_suffix, width=25)
+        suffix_entry.pack(fill=tk.X, pady=(0, 3))
         ttk.Label(
             suffix_frame, 
             text="(e.g., '-background', '-blurred', '-processed')", 
             font=("Arial", 8), 
             foreground="gray"
-        ).pack(side=tk.LEFT)
+        ).pack(anchor=tk.W)
         
         # Audio Handling Option (for videos)
         audio_frame = ttk.Frame(output_frame)
-        audio_frame.pack(fill=tk.X)
+        audio_frame.pack(fill=tk.X, pady=(10, 0))
         
         self.audio_checkbox = ttk.Checkbutton(
             audio_frame,
-            text="🔊 Keep audio in output videos (requires ffmpeg)",
+            text="🔊 Keep audio in output videos",
             variable=self.keep_audio
         )
-        self.audio_checkbox.pack(side=tk.LEFT)
+        self.audio_checkbox.pack(anchor=tk.W)
         ttk.Label(
             audio_frame,
-            text="(Uncheck to remove audio from videos)",
+            text="(requires ffmpeg)",
             font=("Arial", 8),
             foreground="gray"
-        ).pack(side=tk.LEFT, padx=(10, 0))
+        ).pack(anchor=tk.W, padx=(20, 0))
         
-        # Action Buttons Section
+        # ========== Action Buttons Section (Full Width - Row 3) ==========
         action_frame = ttk.Frame(content_frame)
-        action_frame.pack(fill=tk.X, pady=(0, 10))
+        action_frame.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 6), padx=5)
         
         self.process_button = ttk.Button(
             action_frame, 
@@ -487,7 +521,7 @@ class HumanBlurGUI:
             command=self.process,
             width=20
         )
-        self.process_button.pack(side=tk.LEFT, expand=True, padx=5)
+        self.process_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
         
         help_button = ttk.Button(
             action_frame,
@@ -495,67 +529,104 @@ class HumanBlurGUI:
             command=self.show_help,
             width=15
         )
-        help_button.pack(side=tk.LEFT, padx=5)
+        help_button.pack(side=tk.LEFT, padx=(5, 0))
         
-        # Progress Section
-        progress_frame = ttk.LabelFrame(content_frame, text="Processing Progress", padding="10")
-        progress_frame.pack(fill=tk.BOTH, expand=True)
+        # ========== Progress Section (2-Column Layout - Row 4) ==========
+        progress_frame = ttk.LabelFrame(content_frame, text="Processing Progress", padding="8")
+        progress_frame.grid(row=4, column=0, columnspan=2, sticky="ew", pady=(0, 5), padx=5)
         
-        # Current file label
+        # Configure 2-column grid for progress bars
+        progress_frame.columnconfigure(0, weight=1)
+        progress_frame.columnconfigure(1, weight=1)
+        
+        # Left Column: Individual File Progress
+        file_progress_frame = ttk.Frame(progress_frame)
+        file_progress_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        
+        ttk.Label(file_progress_frame, text="Individual File Progress:", font=("Arial", 9, "bold")).pack(anchor=tk.W, pady=(0, 3))
+        
         self.current_file_label = ttk.Label(
-            progress_frame, 
+            file_progress_frame, 
             textvariable=self.current_file_name,
-            font=("Arial", 9),
+            font=("Arial", 8),
             foreground="blue"
         )
-        self.current_file_label.pack(anchor=tk.W, pady=(0, 5))
+        self.current_file_label.pack(anchor=tk.W, pady=(0, 3))
         
-        # Individual file progress
-        ttk.Label(progress_frame, text="Current file:", font=("Arial", 9)).pack(anchor=tk.W)
+        # Percentage label above progress bar
+        self.file_percentage_label = ttk.Label(
+            file_progress_frame,
+            textvariable=self.current_file_percentage,
+            font=("Arial", 9, "bold"),
+            foreground="blue"
+        )
+        self.file_percentage_label.pack(anchor=tk.W, pady=(0, 2))
+        
         self.file_progress = ttk.Progressbar(
-            progress_frame,
+            file_progress_frame,
             mode='determinate',
             variable=self.current_file_progress,
-            length=400
+            maximum=100
         )
-        self.file_progress.pack(fill=tk.X, pady=(0, 10))
+        self.file_progress.pack(fill=tk.X, pady=(0, 5))
         
-        # Overall progress (for batch)
-        self.overall_label = ttk.Label(progress_frame, text="Overall progress:", font=("Arial", 9))
-        self.overall_label.pack(anchor=tk.W)
+        # Right Column: Overall Progress
+        overall_progress_frame = ttk.Frame(progress_frame)
+        overall_progress_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        
+        ttk.Label(overall_progress_frame, text="Overall Progress (Batch):", font=("Arial", 9, "bold")).pack(anchor=tk.W, pady=(0, 3))
+        
+        self.overall_label = ttk.Label(overall_progress_frame, text="0%", font=("Arial", 8), foreground="green")
+        self.overall_label.pack(anchor=tk.W, pady=(0, 3))
+        
         self.overall_progressbar = ttk.Progressbar(
-            progress_frame,
+            overall_progress_frame,
             mode='determinate',
-            variable=self.overall_progress,
-            length=400
+            variable=self.overall_progress
         )
-        self.overall_progressbar.pack(fill=tk.X, pady=(0, 10))
+        self.overall_progressbar.pack(fill=tk.X, pady=(0, 5))
         
-        # Status Label
+        # Status Label (Full Width below both progress bars)
         self.status_label = ttk.Label(
             progress_frame, 
             text="Ready to process media files", 
             font=("Arial", 9, "bold"),
             foreground="gray"
         )
-        self.status_label.pack(pady=(10, 0))
+        self.status_label.grid(row=1, column=0, columnspan=2, pady=(5, 0))
         
         # Initial update
         self.update_blur_controls()
         
-    def update_model_selection(self, event=None):
-        """Update model name from combobox selection."""
-        selection = self.model_name.get()
-        # Extract actual model name from display text
-        model_map = {
-            "yolov8n-seg.pt (Fastest)": "yolov8n-seg.pt",
-            "yolov8s-seg.pt (Balanced)": "yolov8s-seg.pt",
-            "yolov8m-seg.pt (Accurate)": "yolov8m-seg.pt",
-            "yolov8l-seg.pt (Very Accurate)": "yolov8l-seg.pt",
-            "yolov8x-seg.pt (Maximum Accuracy)": "yolov8x-seg.pt"
-        }
-        actual_model = model_map.get(selection, "yolov8n-seg.pt")
-        self.model_name.set(actual_model)
+        # Update overall progress label
+        self.overall_progress.trace_add("write", self.update_overall_label)
+        
+        # Update file progress percentage label
+        self.current_file_progress.trace_add("write", self.update_file_progress_label)
+        
+    def update_overall_label(self, *args):
+        """Update overall progress percentage label."""
+        value = self.overall_progress.get()
+        self.overall_label.config(text=f"{int(value)}%")
+    
+    def update_file_progress_label(self, *args):
+        """Update file progress percentage label."""
+        value = self.current_file_progress.get()
+        self.current_file_percentage.set(f"{int(value)}%")
+    
+    def progress_callback(self, current: int, total: int):
+        """
+        Progress callback for file processing.
+        Called by HumanBlurProcessor during processing.
+        
+        Args:
+            current: Current frame/step number
+            total: Total frames/steps
+        """
+        if total > 0:
+            percentage = (current * 100) / total
+            # Use root.after to update GUI from processing thread
+            self.root.after(0, lambda: self.current_file_progress.set(percentage))
         
     def show_help(self):
         """Show help dialog."""
@@ -637,19 +708,6 @@ class HumanBlurGUI:
         """Update status label."""
         self.status_label.config(text=message, foreground=color)
     
-    def update_progress(self, current, total):
-        """
-        Update progress bar safely from processing thread.
-        
-        Args:
-            current: Current progress value
-            total: Total progress value
-        """
-        if total > 0:
-            progress_pct = (current / total) * 100
-            # Use root.after to safely update GUI from thread
-            self.root.after(0, lambda: self.current_file_progress.set(progress_pct))
-    
     def open_file(self, file_path: Path):
         """
         Open a file using the system's default application.
@@ -694,7 +752,7 @@ class HumanBlurGUI:
                 mask_type=self.mask_type.get(),
                 filename_suffix=self.filename_suffix.get(),
                 keep_audio=self.keep_audio.get(),
-                progress_callback=self.update_progress
+                progress_callback=self.progress_callback
             )
             
             # Process based on input type
@@ -708,12 +766,8 @@ class HumanBlurGUI:
                 # Process single file
                 self.current_file_name.set(f"Processing: {input_path.name}")
                 self.update_status(f"Processing {input_path.name}...", "blue")
-                self.current_file_progress.set(0)  # Reset progress
                 
                 success = processor.process_image(input_path, confidence=self.confidence.get()) if input_path.suffix.lower() in self.supported_image_formats else processor.process_video(input_path, confidence=self.confidence.get())
-                
-                # Set to 100% when done
-                self.current_file_progress.set(100)
                 
                 if success:
                     # Determine output path using custom filename suffix
@@ -760,12 +814,14 @@ class HumanBlurGUI:
                 
                 # Process each file
                 for idx, file_path in enumerate(media_files, 1):
+                    # Reset file progress for each file
+                    self.current_file_progress.set(0)
+                    
                     # Update progress
                     progress_pct = (idx / total_files) * 100
                     self.overall_progress.set(progress_pct)
                     self.current_file_name.set(f"[{idx}/{total_files}] {file_path.name}")
                     self.update_status(f"Processing {idx}/{total_files}: {file_path.name}", "blue")
-                    self.current_file_progress.set(0)  # Reset file progress
                     
                     # Reset processor's detection list for each file
                     processor.all_detections = []
@@ -776,9 +832,6 @@ class HumanBlurGUI:
                             success = processor.process_image(file_path, confidence=self.confidence.get())
                         else:
                             success = processor.process_video(file_path, confidence=self.confidence.get())
-                        
-                        # Set file progress to 100% when done
-                        self.current_file_progress.set(100)
                         
                         if success:
                             successful += 1
@@ -853,6 +906,10 @@ class HumanBlurGUI:
 
 def main():
     """Main entry point for enhanced GUI application."""
+    # Fix for multiprocessing in frozen executables
+    import multiprocessing
+    multiprocessing.freeze_support()
+    
     root = tk.Tk()
     
     # Configure style
