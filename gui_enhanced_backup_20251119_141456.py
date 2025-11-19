@@ -225,10 +225,8 @@ class HumanBlurGUI:
         """Initialize the enhanced GUI application."""
         self.root = root
         self.root.title("Human Blur Tool v3.0 - Enhanced")
-        # Set initial size and minimum size - compact to fit on standard screens
-        self.root.geometry("1000x720")
-        self.root.minsize(950, 650)
-        self.root.resizable(True, True)
+        self.root.geometry("750x700")
+        self.root.resizable(False, False)
         
         # Variables
         self.input_path = tk.StringVar()
@@ -264,7 +262,7 @@ class HumanBlurGUI:
         
         # Logo and Title Frame
         header_frame = ttk.Frame(main_container)
-        header_frame.pack(fill=tk.X, padx=10, pady=(5, 3))
+        header_frame.pack(fill=tk.X, padx=10, pady=10)
         
         # Try to load and display logo
         logo_path = Path(__file__).parent / "logo.png"
@@ -298,22 +296,15 @@ class HumanBlurGUI:
         subtitle_label.pack(anchor=tk.W)
         
         # Separator
-        ttk.Separator(main_container, orient='horizontal').pack(fill=tk.X, padx=10, pady=3)
+        ttk.Separator(main_container, orient='horizontal').pack(fill=tk.X, padx=10, pady=5)
         
-        # Main content frame with grid layout
+        # Main content frame with scrollbar capability
         content_frame = ttk.Frame(main_container)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(3, 8))
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
         
-        # Configure grid columns with equal weight for resizing
-        content_frame.columnconfigure(0, weight=1)
-        content_frame.columnconfigure(1, weight=1)
-        # Configure rows to expand
-        content_frame.rowconfigure(1, weight=1)
-        content_frame.rowconfigure(2, weight=1)
-        
-        # ========== File/Folder Selection Section (Full Width - Row 0) ==========
-        input_section = ttk.LabelFrame(content_frame, text="Input Selection", padding="8")
-        input_section.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 6), padx=5)
+        # File/Folder Selection Section
+        input_section = ttk.LabelFrame(content_frame, text="Input Selection", padding="10")
+        input_section.pack(fill=tk.X, pady=(0, 10))
         
         ttk.Label(input_section, text="Select file or folder to process:").pack(anchor=tk.W, pady=(0, 5))
         
@@ -345,14 +336,12 @@ class HumanBlurGUI:
             media_filter_frame, text="Videos Only", variable=self.media_type, value="videos"
         ).pack(side=tk.LEFT, padx=5)
         
-        # ========== ROW 1: Processing Mode (Left) | Blur Settings (Right) ==========
-        
-        # Processing Mode Section (Left Column - Row 1)
-        mask_section = ttk.LabelFrame(content_frame, text="Processing Mode", padding="8")
-        mask_section.grid(row=1, column=0, sticky="nsew", pady=(0, 6), padx=(5, 3))
+        # Mask Type Selection Section
+        mask_section = ttk.LabelFrame(content_frame, text="Processing Mode", padding="10")
+        mask_section.pack(fill=tk.X, pady=(0, 10))
         
         mask_frame = ttk.Frame(mask_section)
-        mask_frame.pack(fill=tk.BOTH, expand=True)
+        mask_frame.pack(fill=tk.X)
         
         ttk.Radiobutton(
             mask_frame, 
@@ -370,15 +359,15 @@ class HumanBlurGUI:
             command=self.update_blur_controls
         ).pack(anchor=tk.W, pady=2)
         
-        # Blur Settings Section (Right Column - Row 1)
-        blur_settings_frame = ttk.LabelFrame(content_frame, text="Blur Settings (Blur Mode Only)", padding="8")
-        blur_settings_frame.grid(row=1, column=1, sticky="nsew", pady=(0, 6), padx=(3, 5))
+        # Blur Settings Section (only for blur mode)
+        blur_settings_frame = ttk.LabelFrame(content_frame, text="Blur Settings (Blur Mode Only)", padding="10")
+        blur_settings_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Blur Intensity
         intensity_frame = ttk.Frame(blur_settings_frame)
         intensity_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(intensity_frame, text="Intensity:", width=10).pack(side=tk.LEFT)
+        ttk.Label(intensity_frame, text="Intensity:", width=12).pack(side=tk.LEFT)
         self.intensity_slider = ttk.Scale(
             intensity_frame, 
             from_=51, 
@@ -397,7 +386,7 @@ class HumanBlurGUI:
         passes_frame = ttk.Frame(blur_settings_frame)
         passes_frame.pack(fill=tk.X)
         
-        ttk.Label(passes_frame, text="Passes:", width=10).pack(side=tk.LEFT)
+        ttk.Label(passes_frame, text="Passes:", width=12).pack(side=tk.LEFT)
         self.passes_spinbox = ttk.Spinbox(
             passes_frame, 
             from_=1, 
@@ -409,17 +398,15 @@ class HumanBlurGUI:
         ttk.Label(passes_frame, text="(More passes = stronger blur)", 
                  font=("Arial", 8), foreground="gray").pack(side=tk.LEFT, padx=(10, 0))
         
-        # ========== ROW 2: Advanced Settings (Left) | Output Settings (Right) ==========
-        
-        # Advanced Settings Section (Left Column - Row 2)
-        advanced_frame = ttk.LabelFrame(content_frame, text="Advanced Settings", padding="8")
-        advanced_frame.grid(row=2, column=0, sticky="nsew", pady=(0, 6), padx=(5, 3))
+        # Advanced Settings Section
+        advanced_frame = ttk.LabelFrame(content_frame, text="Advanced Settings", padding="10")
+        advanced_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Confidence
         confidence_frame = ttk.Frame(advanced_frame)
         confidence_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(confidence_frame, text="Confidence:", width=10).pack(side=tk.LEFT)
+        ttk.Label(confidence_frame, text="Confidence:", width=12).pack(side=tk.LEFT)
         self.confidence_slider = ttk.Scale(
             confidence_frame, 
             from_=0.1, 
@@ -436,63 +423,63 @@ class HumanBlurGUI:
         
         # Model Selection
         model_frame = ttk.Frame(advanced_frame)
-        model_frame.pack(fill=tk.X)
+        model_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(model_frame, text="Model:", width=10).pack(side=tk.LEFT)
+        ttk.Label(model_frame, text="Model:", width=12).pack(side=tk.LEFT)
         model_combo = ttk.Combobox(
             model_frame,
             textvariable=self.model_name,
             values=[
-                "yolov8n-seg.pt",
-                "yolov8s-seg.pt",
-                "yolov8m-seg.pt",
-                "yolov8l-seg.pt",
-                "yolov8x-seg.pt"
+                "yolov8n-seg.pt (Fastest)",
+                "yolov8s-seg.pt (Balanced)",
+                "yolov8m-seg.pt (Accurate)",
+                "yolov8l-seg.pt (Very Accurate)",
+                "yolov8x-seg.pt (Maximum Accuracy)"
             ],
-            width=18,
+            width=30,
             state="readonly"
         )
-        model_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        model_combo.current(0)
+        model_combo.pack(side=tk.LEFT)
+        model_combo.bind('<<ComboboxSelected>>', self.update_model_selection)
         
-        # Output Settings Section (Right Column - Row 2)
-        output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="8")
-        output_frame.grid(row=2, column=1, sticky="nsew", pady=(0, 6), padx=(3, 5))
+        # Output Settings Section
+        output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="10")
+        output_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Custom Filename Suffix
         suffix_frame = ttk.Frame(output_frame)
         suffix_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(suffix_frame, text="Filename suffix:").pack(anchor=tk.W, pady=(0, 3))
-        suffix_entry = ttk.Entry(suffix_frame, textvariable=self.filename_suffix, width=25)
-        suffix_entry.pack(fill=tk.X, pady=(0, 3))
+        ttk.Label(suffix_frame, text="Filename suffix:", width=12).pack(side=tk.LEFT)
+        suffix_entry = ttk.Entry(suffix_frame, textvariable=self.filename_suffix, width=20)
+        suffix_entry.pack(side=tk.LEFT, padx=(0, 10))
         ttk.Label(
             suffix_frame, 
             text="(e.g., '-background', '-blurred', '-processed')", 
             font=("Arial", 8), 
             foreground="gray"
-        ).pack(anchor=tk.W)
+        ).pack(side=tk.LEFT)
         
         # Audio Handling Option (for videos)
         audio_frame = ttk.Frame(output_frame)
-        audio_frame.pack(fill=tk.X, pady=(10, 0))
+        audio_frame.pack(fill=tk.X)
         
         self.audio_checkbox = ttk.Checkbutton(
             audio_frame,
-            text="🔊 Keep audio in output videos",
+            text="🔊 Keep audio in output videos (requires ffmpeg)",
             variable=self.keep_audio
         )
-        self.audio_checkbox.pack(anchor=tk.W)
+        self.audio_checkbox.pack(side=tk.LEFT)
         ttk.Label(
             audio_frame,
-            text="(requires ffmpeg)",
+            text="(Uncheck to remove audio from videos)",
             font=("Arial", 8),
             foreground="gray"
-        ).pack(anchor=tk.W, padx=(20, 0))
+        ).pack(side=tk.LEFT, padx=(10, 0))
         
-        # ========== Action Buttons Section (Full Width - Row 3) ==========
+        # Action Buttons Section
         action_frame = ttk.Frame(content_frame)
-        action_frame.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 6), padx=5)
+        action_frame.pack(fill=tk.X, pady=(0, 10))
         
         self.process_button = ttk.Button(
             action_frame, 
@@ -500,7 +487,7 @@ class HumanBlurGUI:
             command=self.process,
             width=20
         )
-        self.process_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
+        self.process_button.pack(side=tk.LEFT, expand=True, padx=5)
         
         help_button = ttk.Button(
             action_frame,
@@ -508,71 +495,66 @@ class HumanBlurGUI:
             command=self.show_help,
             width=15
         )
-        help_button.pack(side=tk.LEFT, padx=(5, 0))
+        help_button.pack(side=tk.LEFT, padx=5)
         
-        # ========== Progress Section (2-Column Layout - Row 4) ==========
-        progress_frame = ttk.LabelFrame(content_frame, text="Processing Progress", padding="8")
-        progress_frame.grid(row=4, column=0, columnspan=2, sticky="ew", pady=(0, 5), padx=5)
+        # Progress Section
+        progress_frame = ttk.LabelFrame(content_frame, text="Processing Progress", padding="10")
+        progress_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Configure 2-column grid for progress bars
-        progress_frame.columnconfigure(0, weight=1)
-        progress_frame.columnconfigure(1, weight=1)
-        
-        # Left Column: Individual File Progress
-        file_progress_frame = ttk.Frame(progress_frame)
-        file_progress_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
-        
-        ttk.Label(file_progress_frame, text="Individual File Progress:", font=("Arial", 9, "bold")).pack(anchor=tk.W, pady=(0, 3))
-        
+        # Current file label
         self.current_file_label = ttk.Label(
-            file_progress_frame, 
+            progress_frame, 
             textvariable=self.current_file_name,
-            font=("Arial", 8),
+            font=("Arial", 9),
             foreground="blue"
         )
-        self.current_file_label.pack(anchor=tk.W, pady=(0, 3))
+        self.current_file_label.pack(anchor=tk.W, pady=(0, 5))
         
+        # Individual file progress
+        ttk.Label(progress_frame, text="Current file:", font=("Arial", 9)).pack(anchor=tk.W)
         self.file_progress = ttk.Progressbar(
-            file_progress_frame,
-            mode='indeterminate'
+            progress_frame,
+            mode='indeterminate',
+            length=400
         )
-        self.file_progress.pack(fill=tk.X, pady=(0, 5))
+        self.file_progress.pack(fill=tk.X, pady=(0, 10))
         
-        # Right Column: Overall Progress
-        overall_progress_frame = ttk.Frame(progress_frame)
-        overall_progress_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
-        
-        ttk.Label(overall_progress_frame, text="Overall Progress (Batch):", font=("Arial", 9, "bold")).pack(anchor=tk.W, pady=(0, 3))
-        
-        self.overall_label = ttk.Label(overall_progress_frame, text="0%", font=("Arial", 8), foreground="green")
-        self.overall_label.pack(anchor=tk.W, pady=(0, 3))
-        
+        # Overall progress (for batch)
+        self.overall_label = ttk.Label(progress_frame, text="Overall progress:", font=("Arial", 9))
+        self.overall_label.pack(anchor=tk.W)
         self.overall_progressbar = ttk.Progressbar(
-            overall_progress_frame,
+            progress_frame,
             mode='determinate',
-            variable=self.overall_progress
+            variable=self.overall_progress,
+            length=400
         )
-        self.overall_progressbar.pack(fill=tk.X, pady=(0, 5))
+        self.overall_progressbar.pack(fill=tk.X, pady=(0, 10))
         
-        # Status Label (Full Width below both progress bars)
+        # Status Label
         self.status_label = ttk.Label(
             progress_frame, 
             text="Ready to process media files", 
             font=("Arial", 9, "bold"),
             foreground="gray"
         )
-        self.status_label.grid(row=1, column=0, columnspan=2, pady=(5, 0))
+        self.status_label.pack(pady=(10, 0))
         
         # Initial update
         self.update_blur_controls()
         
-        # Update overall progress label
-        self.overall_progress.trace_add("write", self.update_overall_label)
-        
-    def update_overall_label(self, *args):
-        """Update overall progress percentage label."""
-        value = self.overall_progress.get()
-        self.overall_label.config(text=f"{int(value)}%")
+    def update_model_selection(self, event=None):
+        """Update model name from combobox selection."""
+        selection = self.model_name.get()
+        # Extract actual model name from display text
+        model_map = {
+            "yolov8n-seg.pt (Fastest)": "yolov8n-seg.pt",
+            "yolov8s-seg.pt (Balanced)": "yolov8s-seg.pt",
+            "yolov8m-seg.pt (Accurate)": "yolov8m-seg.pt",
+            "yolov8l-seg.pt (Very Accurate)": "yolov8l-seg.pt",
+            "yolov8x-seg.pt (Maximum Accuracy)": "yolov8x-seg.pt"
+        }
+        actual_model = model_map.get(selection, "yolov8n-seg.pt")
+        self.model_name.set(actual_model)
         
     def show_help(self):
         """Show help dialog."""
