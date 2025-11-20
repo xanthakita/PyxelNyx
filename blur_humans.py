@@ -37,7 +37,7 @@ class HumanBlurProcessor:
     SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
     SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = True, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, progress_callback=None):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = False, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, progress_callback=None):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -971,8 +971,8 @@ Note: Audio preservation in videos requires ffmpeg to be installed.
     parser.add_argument(
         '--enable-detection',
         action='store_true',
-        default=True,
-        help='Enable background object detection (default: enabled)'
+        default=False,
+        help='Enable background object detection (default: disabled)'
     )
     
     parser.add_argument(

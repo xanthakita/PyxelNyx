@@ -238,6 +238,8 @@ class HumanBlurGUI:
         self.media_type = tk.StringVar(value="both")
         self.keep_audio = tk.BooleanVar(value=True)  # New: Audio handling option
         self.filename_suffix = tk.StringVar(value="-background")  # New: Custom filename suffix
+        self.enable_object_detection = tk.BooleanVar(value=False)  # New: Object detection toggle
+        self.detection_model = tk.StringVar(value="yolov8m.pt")  # New: Object detection model
         self.processing = False
         self.last_output_path = None
         
@@ -421,26 +423,59 @@ class HumanBlurGUI:
         
         self.confidence.trace_add("write", self.update_confidence_label)
         
-        # Model Selection
+        # Person Detection Model Selection
         model_frame = ttk.Frame(advanced_frame)
-        model_frame.pack(fill=tk.X)
+        model_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(model_frame, text="Model:", width=12).pack(side=tk.LEFT)
+        ttk.Label(model_frame, text="Person Model:", width=12).pack(side=tk.LEFT)
         model_combo = ttk.Combobox(
             model_frame,
             textvariable=self.model_name,
             values=[
-                "yolov8n-seg.pt (Fastest)",
-                "yolov8s-seg.pt (Balanced)",
-                "yolov8m-seg.pt (Accurate)",
-                "yolov8l-seg.pt (Very Accurate)",
-                "yolov8x-seg.pt (Maximum Accuracy)"
+                "yolov8n-seg.pt (fastest)",
+                "yolov8s-seg.pt (faster)",
+                "yolov8m-seg.pt (normal)",
+                "yolov8l-seg.pt (slower)",
+                "yolov8x-seg.pt (slowest)"
             ],
             width=30,
             state="readonly"
         )
         model_combo.pack(side=tk.LEFT)
         model_combo.bind('<<ComboboxSelected>>', self.update_model_selection)
+        
+        # Object Detection Toggle
+        obj_detect_frame = ttk.Frame(advanced_frame)
+        obj_detect_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.obj_detect_checkbox = ttk.Checkbutton(
+            obj_detect_frame,
+            text="Enable Object Detection (for background objects)",
+            variable=self.enable_object_detection,
+            command=self.update_detection_controls
+        )
+        self.obj_detect_checkbox.pack(side=tk.LEFT)
+        
+        # Object Detection Model Selection
+        detection_model_frame = ttk.Frame(advanced_frame)
+        detection_model_frame.pack(fill=tk.X)
+        
+        ttk.Label(detection_model_frame, text="Detection Model:", width=12).pack(side=tk.LEFT)
+        self.detection_model_combo = ttk.Combobox(
+            detection_model_frame,
+            textvariable=self.detection_model,
+            values=[
+                "yolov8n.pt (fastest)",
+                "yolov8s.pt (faster)",
+                "yolov8m.pt (normal)",
+                "yolov8l.pt (slower)",
+                "yolov8x.pt (slowest)"
+            ],
+            width=30,
+            state="readonly"
+        )
+        self.detection_model_combo.pack(side=tk.LEFT)
+        self.detection_model_combo.bind('<<ComboboxSelected>>', self.update_detection_model_selection)
         
         # Output Settings Section
         output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="10")
@@ -542,20 +577,42 @@ class HumanBlurGUI:
         
         # Initial update
         self.update_blur_controls()
+        self.update_detection_controls()
         
     def update_model_selection(self, event=None):
         """Update model name from combobox selection."""
         selection = self.model_name.get()
         # Extract actual model name from display text
         model_map = {
-            "yolov8n-seg.pt (Fastest)": "yolov8n-seg.pt",
-            "yolov8s-seg.pt (Balanced)": "yolov8s-seg.pt",
-            "yolov8m-seg.pt (Accurate)": "yolov8m-seg.pt",
-            "yolov8l-seg.pt (Very Accurate)": "yolov8l-seg.pt",
-            "yolov8x-seg.pt (Maximum Accuracy)": "yolov8x-seg.pt"
+            "yolov8n-seg.pt (fastest)": "yolov8n-seg.pt",
+            "yolov8s-seg.pt (faster)": "yolov8s-seg.pt",
+            "yolov8m-seg.pt (normal)": "yolov8m-seg.pt",
+            "yolov8l-seg.pt (slower)": "yolov8l-seg.pt",
+            "yolov8x-seg.pt (slowest)": "yolov8x-seg.pt"
         }
         actual_model = model_map.get(selection, "yolov8n-seg.pt")
         self.model_name.set(actual_model)
+    
+    def update_detection_model_selection(self, event=None):
+        """Update detection model name from combobox selection."""
+        selection = self.detection_model.get()
+        # Extract actual model name from display text
+        model_map = {
+            "yolov8n.pt (fastest)": "yolov8n.pt",
+            "yolov8s.pt (faster)": "yolov8s.pt",
+            "yolov8m.pt (normal)": "yolov8m.pt",
+            "yolov8l.pt (slower)": "yolov8l.pt",
+            "yolov8x.pt (slowest)": "yolov8x.pt"
+        }
+        actual_model = model_map.get(selection, "yolov8m.pt")
+        self.detection_model.set(actual_model)
+    
+    def update_detection_controls(self):
+        """Enable/disable detection model controls based on toggle state."""
+        if self.enable_object_detection.get():
+            self.detection_model_combo.config(state="readonly")
+        else:
+            self.detection_model_combo.config(state="disabled")
         
     def show_help(self):
         """Show help dialog."""
@@ -692,6 +749,8 @@ class HumanBlurGUI:
                 blur_intensity=blur_intensity,
                 blur_passes=self.blur_passes.get(),
                 mask_type=self.mask_type.get(),
+                enable_object_detection=self.enable_object_detection.get(),
+                detection_model=self.detection_model.get(),
                 filename_suffix=self.filename_suffix.get(),
                 keep_audio=self.keep_audio.get(),
                 progress_callback=self.update_progress
