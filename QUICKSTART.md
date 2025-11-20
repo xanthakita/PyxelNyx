@@ -6,7 +6,7 @@ Get started with the Human Blur CLI Tool in 5 minutes!
 
 ```bash
 # 1. Navigate to the tool directory
-cd human-blur-tool
+cd pyxelnyx
 
 # 2. Install dependencies
 pip install -r requirements.txt

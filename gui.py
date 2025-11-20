@@ -41,7 +41,7 @@ class HelpDialog:
     
     def __init__(self, parent):
         self.dialog = tk.Toplevel(parent)
-        self.dialog.title("Help - Human Blur Tool")
+        self.dialog.title("Help - PyxelNyx")
         self.dialog.geometry("700x600")
         
         # Create notebook for tabs
@@ -55,11 +55,11 @@ class HelpDialog:
         gui_text = scrolledtext.ScrolledText(gui_frame, wrap=tk.WORD, width=80, height=30)
         gui_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        gui_help = """Human Blur Tool - GUI Usage Guide
+        gui_help = """PyxelNyx - GUI Usage Guide
 
 OVERVIEW
 --------
-The Human Blur Tool automatically detects and masks/blurs humans in images 
+The PyxelNyx automatically detects and masks/blurs humans in images 
 and videos using advanced AI (YOLOv8 segmentation).
 
 GETTING STARTED
@@ -136,7 +136,7 @@ apps@globalemancipation.ngo
         cli_text = scrolledtext.ScrolledText(cli_frame, wrap=tk.WORD, width=80, height=30)
         cli_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        cli_help = """Human Blur Tool - Command Line Usage Guide
+        cli_help = """PyxelNyx - Command Line Usage Guide
 
 BASIC USAGE
 -----------
@@ -244,7 +244,7 @@ class HumanBlurGUI:
     def __init__(self, root):
         """Initialize the enhanced GUI application."""
         self.root = root
-        self.root.title("Human Blur Tool v3.0 - Enhanced")
+        self.root.title("PyxelNyx v3.0 - Enhanced")
         self.root.geometry("750x700")
         self.root.resizable(False, False)
         
@@ -305,7 +305,7 @@ class HumanBlurGUI:
         
         title_label = ttk.Label(
             title_section, 
-            text="Human Blur Tool v3.0", 
+            text="PyxelNyx v3.0", 
             font=("Arial", 20, "bold")
         )
         title_label.pack(anchor=tk.W)

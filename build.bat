@@ -39,9 +39,9 @@ echo √ Cleaned build directories
 echo.
 
 REM Build using the spec file
-echo Building executable using HumanBlurTool.spec...
+echo Building executable using PyxelNyx.spec...
 echo.
-pyinstaller HumanBlurTool.spec --clean
+pyinstaller PyxelNyx.spec --clean
 
 REM Check if build was successful
 if errorlevel 0 (
@@ -51,10 +51,10 @@ if errorlevel 0 (
     echo ======================================
     echo.
     echo Your Windows executable is ready:
-    echo   Location: dist\HumanBlurTool.exe
+    echo   Location: dist\PyxelNyx.exe
     echo.
     echo To run the application:
-    echo   dist\HumanBlurTool.exe
+    echo   dist\PyxelNyx.exe
     echo.
     echo.
     echo Build files:

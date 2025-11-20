@@ -212,7 +212,7 @@ pip3 install -r requirements.txt
 
 # Open Command Prompt or PowerShell
 # Navigate to project directory
-cd path\to\human-blur-tool
+cd path\to\pyxelnyx
 
 # Install dependencies
 pip install -r requirements.txt
@@ -338,7 +338,7 @@ pip uninstall opencv-python numpy ultralytics torch torchvision
 rm -rf venv/
 
 # If installed system-wide
-pip uninstall human-blur-tool
+pip uninstall pyxelnyx
 
 # Remove cached models
 rm -rf ~/.cache/ultralytics/
@@ -352,8 +352,8 @@ For developers who want to modify the code:
 
 ```bash
 # Clone/download the repository
-git clone https://github.com/yourusername/human-blur-tool.git
-cd human-blur-tool
+git clone https://github.com/yourusername/pyxelnyx.git
+cd pyxelnyx
 
 # Create virtual environment
 python -m venv venv

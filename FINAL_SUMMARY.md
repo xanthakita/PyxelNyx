@@ -2,7 +2,7 @@
 
 ## ✅ Mission Accomplished
 
-Both requested features have been **successfully implemented** in the Human Blur Tool GUI!
+Both requested features have been **successfully implemented** in the PyxelNyx GUI!
 
 ---
 
@@ -77,7 +77,7 @@ Both requested features have been **successfully implemented** in the Human Blur
 
 ### Step 1: Launch the GUI
 ```bash
-cd /home/ubuntu/code_artifacts/human-blur-tool
+cd /home/ubuntu/code_artifacts/pyxelnyx
 python gui_enhanced.py
 ```
 
@@ -245,7 +245,7 @@ A comprehensive, user-friendly solution for:
 
 ## 💬 Final Words
 
-The Human Blur Tool now has **powerful new options** that give users more control over their outputs. Whether you need silent videos for privacy or custom file naming for organization, these features have you covered!
+The PyxelNyx now has **powerful new options** that give users more control over their outputs. Whether you need silent videos for privacy or custom file naming for organization, these features have you covered!
 
 **All code has been:**
 - ✅ Written and tested
@@ -284,4 +284,4 @@ The Human Blur Tool now has **powerful new options** that give users more contro
 **Quality:** Production Ready  
 **Documentation:** Comprehensive  
 
-**🎉 Thank you for using Human Blur Tool v3.0 Enhanced! 🎉**
+**🎉 Thank you for using PyxelNyx v3.0 Enhanced! 🎉**

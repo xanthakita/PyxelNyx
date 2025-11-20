@@ -35,9 +35,9 @@ echo "✓ Cleaned build directories"
 echo ""
 
 # Build using the spec file
-echo "Building executable using HumanBlurTool.spec..."
+echo "Building executable using PyxelNyx.spec..."
 echo ""
-pyinstaller HumanBlurTool.spec --clean
+pyinstaller PyxelNyx.spec --clean
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
@@ -50,22 +50,22 @@ if [ $? -eq 0 ]; then
     # Platform-specific instructions
     if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "Your macOS application is ready:"
-        echo "  Location: dist/HumanBlurTool.app"
+        echo "  Location: dist/PyxelNyx.app"
         echo ""
         echo "To run the application:"
-        echo "  open dist/HumanBlurTool.app"
+        echo "  open dist/PyxelNyx.app"
         echo ""
         echo "To remove quarantine attribute (if needed):"
-        echo "  xattr -cr dist/HumanBlurTool.app"
+        echo "  xattr -cr dist/PyxelNyx.app"
     else
         echo "Your Linux executable is ready:"
-        echo "  Location: dist/HumanBlurTool"
+        echo "  Location: dist/PyxelNyx"
         echo ""
         echo "To run the application:"
-        echo "  ./dist/HumanBlurTool"
+        echo "  ./dist/PyxelNyx"
         echo ""
         echo "Make sure it's executable:"
-        echo "  chmod +x dist/HumanBlurTool"
+        echo "  chmod +x dist/PyxelNyx"
     fi
     
     echo ""

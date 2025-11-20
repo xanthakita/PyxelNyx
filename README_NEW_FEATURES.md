@@ -2,7 +2,7 @@
 
 ## Overview
 
-Two powerful new features have been successfully added to the **Human Blur Tool v3.0**:
+Two powerful new features have been successfully added to the **PyxelNyx v3.0**:
 
 1. **🔊 Audio Handling Option** - Choose to keep or remove audio from videos
 2. **📝 Custom Filename Suffix** - Specify your own suffix for output files
@@ -39,7 +39,7 @@ Two powerful new features have been successfully added to the **Human Blur Tool 
 
 ### Launch the GUI
 ```bash
-cd /home/ubuntu/code_artifacts/human-blur-tool
+cd /home/ubuntu/code_artifacts/pyxelnyx
 python gui_enhanced.py
 ```
 
@@ -233,6 +233,6 @@ python gui_enhanced.py
 
 ---
 
-**Version:** Human Blur Tool v3.0 Enhanced
+**Version:** PyxelNyx v3.0 Enhanced
 **Implementation Date:** November 19, 2025
 **Status:** ✅ Complete and Ready for Production

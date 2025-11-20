@@ -153,7 +153,7 @@ brew install ffmpeg
 
 ### Running the GUI
 ```bash
-cd /home/ubuntu/code_artifacts/human-blur-tool
+cd /home/ubuntu/code_artifacts/pyxelnyx
 python gui_enhanced.py
 ```
 
@@ -351,14 +351,14 @@ Both requested features have been successfully implemented with:
 - No breaking changes
 - Ready for production use
 
-The Human Blur Tool now offers users greater flexibility and control over their output files, with the ability to customize filenames and manage audio in videos.
+The PyxelNyx now offers users greater flexibility and control over their output files, with the ability to customize filenames and manage audio in videos.
 
 ---
 
 **Implementation Date:** November 19, 2025
-**Version:** Human Blur Tool v3.0 Enhanced
+**Version:** PyxelNyx v3.0 Enhanced
 **Quality:** Production Ready ✅
 
 ---
 
-**Thank you for using the Human Blur Tool!** 🎉
+**Thank you for using the PyxelNyx!** 🎉

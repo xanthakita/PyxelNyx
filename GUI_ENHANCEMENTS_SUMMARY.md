@@ -1,7 +1,7 @@
 # GUI Enhancements Summary
 
 ## Overview
-The Human Blur Tool GUI has been significantly enhanced with comprehensive features for non-technical users while maintaining all existing CLI functionality.
+The PyxelNyx GUI has been significantly enhanced with comprehensive features for non-technical users while maintaining all existing CLI functionality.
 
 ---
 
@@ -86,7 +86,7 @@ The Human Blur Tool GUI has been significantly enhanced with comprehensive featu
 
 ### File Structure
 ```
-human-blur-tool/
+pyxelnyx/
 ├── gui.py                          # Enhanced GUI (main file)
 ├── gui_original_backup.py          # Original GUI backup
 ├── gui_enhanced.py                 # Enhanced GUI source
@@ -137,9 +137,9 @@ python gui.py
 ```
 
 **As executable** (after building):
-- Windows: Double-click `HumanBlurTool.exe`
-- macOS: Double-click `HumanBlurTool.app`
-- Linux: Run `./HumanBlurTool`
+- Windows: Double-click `PyxelNyx.exe`
+- macOS: Double-click `PyxelNyx.app`
+- Linux: Run `./PyxelNyx`
 
 ### Building Executables
 
@@ -279,7 +279,7 @@ For issues, questions, or feature requests:
 
 ## Conclusion
 
-The Human Blur Tool now features a **production-ready, user-friendly GUI** suitable for non-technical users while maintaining **100% CLI compatibility** for advanced users. The application is **cross-platform** and **ready for compilation** into standalone executables for distribution.
+The PyxelNyx now features a **production-ready, user-friendly GUI** suitable for non-technical users while maintaining **100% CLI compatibility** for advanced users. The application is **cross-platform** and **ready for compilation** into standalone executables for distribution.
 
 All requested features have been successfully implemented:
 1. ✅ File validation with custom error messages

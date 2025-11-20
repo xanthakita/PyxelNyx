@@ -1,6 +1,6 @@
 # PyInstaller Compilation Fixes - Summary
 
-This document summarizes all the fixes applied to make the Human Blur Tool work correctly when compiled with PyInstaller.
+This document summarizes all the fixes applied to make the PyxelNyx work correctly when compiled with PyInstaller.
 
 ## Issues Fixed
 
@@ -89,7 +89,7 @@ if getattr(sys, 'frozen', False):
 ```
 
 #### C. Added All Hidden Imports
-Created comprehensive hidden imports list in `HumanBlurTool.spec`:
+Created comprehensive hidden imports list in `PyxelNyx.spec`:
 
 ```python
 hiddenimports=[
@@ -136,13 +136,13 @@ hiddenimports=[
 **Files Created/Modified:**
 - `gui_enhanced.py` - Added multiprocessing.freeze_support() in main()
 - `runtime_hook.py` - NEW file for multiprocessing initialization
-- `HumanBlurTool.spec` - NEW file with complete PyInstaller configuration
+- `PyxelNyx.spec` - NEW file with complete PyInstaller configuration
 
 ---
 
 ## New Files Created
 
-### 1. HumanBlurTool.spec
+### 1. PyxelNyx.spec
 
 **Purpose:** Complete PyInstaller configuration file with all necessary settings
 
@@ -156,7 +156,7 @@ hiddenimports=[
 
 **Usage:**
 ```bash
-pyinstaller HumanBlurTool.spec --clean
+pyinstaller PyxelNyx.spec --clean
 ```
 
 ### 2. runtime_hook.py
@@ -263,7 +263,7 @@ build.bat
 
 **Manual way:**
 ```bash
-pyinstaller HumanBlurTool.spec --clean
+pyinstaller PyxelNyx.spec --clean
 ```
 
 ### Testing the Compiled App
@@ -287,24 +287,24 @@ pyinstaller HumanBlurTool.spec --clean
 
 **macOS:**
 ```bash
-open dist/HumanBlurTool.app
+open dist/PyxelNyx.app
 ```
 
 If you get "damaged app" warning:
 ```bash
-xattr -cr dist/HumanBlurTool.app
-open dist/HumanBlurTool.app
+xattr -cr dist/PyxelNyx.app
+open dist/PyxelNyx.app
 ```
 
 **Windows:**
 ```cmd
-dist\HumanBlurTool.exe
+dist\PyxelNyx.exe
 ```
 
 **Linux:**
 ```bash
-chmod +x dist/HumanBlurTool
-./dist/HumanBlurTool
+chmod +x dist/PyxelNyx
+./dist/PyxelNyx
 ```
 
 ---
@@ -342,7 +342,7 @@ If issues persist after applying these fixes:
 
 ### Enable Console Output
 
-In `HumanBlurTool.spec`, change:
+In `PyxelNyx.spec`, change:
 ```python
 console=False,  # Change to True
 ```
@@ -361,7 +361,7 @@ If you get "ModuleNotFoundError":
 Check if logo is included:
 ```bash
 # macOS
-unzip -l dist/HumanBlurTool.app/Contents/MacOS/HumanBlurTool | grep logo.png
+unzip -l dist/PyxelNyx.app/Contents/MacOS/PyxelNyx | grep logo.png
 
 # Linux/Windows (if using --onefile)
 # The file is extracted at runtime to sys._MEIPASS
@@ -445,7 +445,7 @@ If you encounter issues not covered here:
 
 1. Check BUILD_EXECUTABLE.md for detailed troubleshooting
 2. Enable console mode for debugging
-3. Check PyInstaller logs in `build/HumanBlurTool/` directory
+3. Check PyInstaller logs in `build/PyxelNyx/` directory
 4. Contact: apps@globalemancipation.ngo
 
 ---

@@ -19,7 +19,7 @@ PROBLEMS SOLVED:
 
 FILES CREATED:
 -------------
-- HumanBlurTool.spec      → Complete PyInstaller configuration
+- PyxelNyx.spec      → Complete PyInstaller configuration
 - runtime_hook.py         → Multiprocessing initialization hook
 - build.sh                → Automated build script (macOS/Linux)
 - build.bat               → Automated build script (Windows)
@@ -38,12 +38,12 @@ EASY WAY (Recommended):
   Mac/Linux: ./build.sh
 
 MANUAL WAY:
-  pyinstaller HumanBlurTool.spec --clean
+  pyinstaller PyxelNyx.spec --clean
 
 OUTPUT LOCATION:
-  Windows: dist\HumanBlurTool.exe
-  macOS:   dist/HumanBlurTool.app
-  Linux:   dist/HumanBlurTool
+  Windows: dist\PyxelNyx.exe
+  macOS:   dist/PyxelNyx.app
+  Linux:   dist/PyxelNyx
 
 TESTING:
 -------

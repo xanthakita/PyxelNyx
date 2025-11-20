@@ -87,7 +87,7 @@ import 'importlib.machinery' # <class '_frozen_importlib.FrozenImporter'>
 import 'site' # <class '_frozen_importlib.FrozenImporter'>
 Python 3.12.4 | packaged by Anaconda, Inc. | (main, Jun 18 2024, 10:07:17) [Clang 14.0.6 ] on darwin
 Type "help", "copyright", "credits" or "license" for more information.
-python3: can't open file '/Users/jonathanwagner/repos/human-blur-tool/env': [Errno 2] No such file or directory
+python3: can't open file '/Users/jonathanwagner/repos/pyxelnyx/env': [Errno 2] No such file or directory
 # clear sys.path_importer_cache
 # clear sys.path_hooks
 # clear builtins._

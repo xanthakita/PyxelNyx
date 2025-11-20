@@ -2,9 +2,9 @@
 
 ## 🎯 Project Overview
 
-Successfully integrated YOLOv8m object detection into the human-blur-tool repository to simultaneously detect and catalog background objects while processing images and videos for human blurring.
+Successfully integrated YOLOv8m object detection into the pyxelnyx repository to simultaneously detect and catalog background objects while processing images and videos for human blurring.
 
-**Repository:** [xanthakita/human-blur-tool](https://github.com/xanthakita/human-blur-tool)  
+**Repository:** [xanthakita/pyxelnyx](https://github.com/xanthakita/pyxelnyx)  
 **Branch:** `feature/yolo-object-detection`  
 **Version:** 3.1.0
 
@@ -321,7 +321,7 @@ Add comprehensive object detection guide
 ## 🔗 Pull Request
 
 **Branch:** `feature/yolo-object-detection`  
-**Create PR:** https://github.com/xanthakita/human-blur-tool/pull/new/feature/yolo-object-detection
+**Create PR:** https://github.com/xanthakita/pyxelnyx/pull/new/feature/yolo-object-detection
 
 **PR Title:** Add YOLO Object Detection Integration (v3.1.0)
 
@@ -449,7 +449,7 @@ For issues or questions:
 
 ## ✨ Conclusion
 
-The YOLO object detection feature has been successfully integrated into the human-blur-tool repository. The implementation:
+The YOLO object detection feature has been successfully integrated into the pyxelnyx repository. The implementation:
 
 - ✅ Maintains existing functionality
 - ✅ Adds powerful new capabilities

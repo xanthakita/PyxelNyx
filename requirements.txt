@@ -1,5 +1,5 @@
 
-# Core dependencies for Human Blur CLI Tool v3.1 (Enhanced with Object Detection)
+# Core dependencies for PyxelNyx v3.1 (Enhanced with Object Detection)
 opencv-python>=4.8.0
 numpy>=1.24.0
 ultralytics>=8.0.0

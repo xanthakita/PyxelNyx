@@ -1,5 +1,5 @@
 
-# Human Blur Tool v3.0 Enhanced 🎭
+# PyxelNyx v3.0 Enhanced 🎭
 
 A Python tool that automatically detects and masks/blurs humans in **images and videos** using **instance segmentation** for precise, lasso-style processing. Built with YOLOv8 segmentation models for accurate human shape detection. Available as both **CLI** and **enhanced GUI** applications with **cross-platform executable support** for Windows, macOS, and Linux.
 
@@ -259,7 +259,7 @@ $ python gui.py
 $ python blur_humans.py family_photo.jpg
 
 ======================================================================
-Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
+PyxelNyx v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -287,7 +287,7 @@ Processing single image: family_photo.jpg
 $ python blur_humans.py family_photo.jpg --mask-type blur
 
 ======================================================================
-Human Blur Tool v2.0 - Segmentation-Based Background Blur
+PyxelNyx v2.0 - Segmentation-Based Background Blur
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -315,7 +315,7 @@ Processing single image: family_photo.jpg
 $ python blur_humans.py IMG_1234.HEIC
 
 ======================================================================
-Human Blur Tool v2.0 - Segmentation-Based Background Blur
+PyxelNyx v2.0 - Segmentation-Based Background Blur
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -341,7 +341,7 @@ Processing single image: IMG_1234.HEIC
 $ python blur_humans.py family_video.mp4
 
 ======================================================================
-Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
+PyxelNyx v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -376,7 +376,7 @@ Processing single video: family_video.mp4
 $ python blur_humans.py sensitive_photo.jpg --mask-type blur --blur 251 --passes 5
 
 ======================================================================
-Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
+PyxelNyx v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -401,7 +401,7 @@ Processing single image: sensitive_photo.jpg
 $ python blur_humans.py ./vacation_photos/
 
 ======================================================================
-Human Blur Tool v3.0 - Segmentation-Based Blur (Images & Videos)
+PyxelNyx v3.0 - Segmentation-Based Blur (Images & Videos)
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...

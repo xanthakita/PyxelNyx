@@ -1,7 +1,7 @@
-# New Features Added to Human Blur Tool
+# New Features Added to PyxelNyx
 
 ## Overview
-Two new options have been successfully added to the Human Blur Tool GUI to provide users with more control over their output files:
+Two new options have been successfully added to the PyxelNyx GUI to provide users with more control over their output files:
 
 1. **Audio Handling Option** - Choose whether to keep or remove audio from video files
 2. **Custom Filename Suffix** - Specify a custom suffix for output filenames

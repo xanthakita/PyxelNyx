@@ -20,7 +20,7 @@ class HumanBlurGUI:
     def __init__(self, root):
         """Initialize the GUI application."""
         self.root = root
-        self.root.title("Human Blur Tool v2.0")
+        self.root.title("PyxelNyx v2.0")
         self.root.geometry("600x550")
         self.root.resizable(False, False)
         
@@ -44,7 +44,7 @@ class HumanBlurGUI:
         
         title_label = ttk.Label(
             title_frame, 
-            text="Human Blur Tool v2.0", 
+            text="PyxelNyx v2.0", 
             font=("Arial", 18, "bold")
         )
         title_label.grid(row=0, column=0)

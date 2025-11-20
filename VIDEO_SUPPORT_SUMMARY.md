@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully extended the Human Blur Tool to support video processing with comprehensive features including audio preservation, progress tracking, and media type filtering.
+Successfully extended the PyxelNyx to support video processing with comprehensive features including audio preservation, progress tracking, and media type filtering.
 
 ## Major Changes
 
@@ -223,5 +223,5 @@ The video processing feature has been successfully implemented and tested. The t
 
 **Version**: 3.0.0  
 **Status**: ✅ Production Ready  
-**Repository**: https://github.com/xanthakita/human-blur-tool  
+**Repository**: https://github.com/xanthakita/pyxelnyx  
 **Last Updated**: November 6, 2025

@@ -21,7 +21,7 @@ python blur_humans.py vacation.jpg
 **Output:**
 ```
 ============================================================
-Human Blur Tool - Background Analysis Helper
+PyxelNyx - Background Analysis Helper
 ============================================================
 
 Loading YOLO model: yolov8n.pt...
@@ -119,7 +119,7 @@ python blur_humans.py /path/to/photos/
 **Output:**
 ```
 ============================================================
-Human Blur Tool - Background Analysis Helper
+PyxelNyx - Background Analysis Helper
 ============================================================
 
 Loading YOLO model: yolov8n.pt...

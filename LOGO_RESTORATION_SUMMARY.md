@@ -3,7 +3,7 @@
 ## Date: November 20, 2024
 
 ## Overview
-Successfully restored the logo.png display to the upper right corner of the PyxelNyx (Human Blur Tool) GUI window.
+Successfully restored the logo.png display to the upper right corner of the PyxelNyx (PyxelNyx) GUI window.
 
 ## Problem Identified
 The GUI code had logo display implementation, but it was using a basic file path resolution method that:
@@ -69,7 +69,7 @@ The logo is properly integrated into the header_frame structure:
 │  Header Frame                                           │
 │  ┌─────────────────────────────┐  ┌─────────────────┐  │
 │  │ Title Section (LEFT)        │  │ Logo (RIGHT)    │  │
-│  │ - Human Blur Tool v3.0      │  │ [80x80 image]   │  │
+│  │ - PyxelNyx v3.0      │  │ [80x80 image]   │  │
 │  │ - Subtitle                  │  │                 │  │
 │  └─────────────────────────────┘  └─────────────────┘  │
 └─────────────────────────────────────────────────────────┘

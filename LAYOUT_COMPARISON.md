@@ -1,4 +1,4 @@
-# Human Blur Tool - GUI Layout Comparison
+# PyxelNyx - GUI Layout Comparison
 
 ## Before & After: Visual Layout Analysis
 

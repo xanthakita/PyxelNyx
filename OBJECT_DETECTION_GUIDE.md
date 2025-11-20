@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Human Blur Tool has been enhanced with **background object detection** capabilities. While the tool blurs or masks humans in images/videos, it now simultaneously detects and catalogs all other objects in the scene.
+The PyxelNyx has been enhanced with **background object detection** capabilities. While the tool blurs or masks humans in images/videos, it now simultaneously detects and catalogs all other objects in the scene.
 
 ### Version 3.1.0 Features
 
@@ -193,7 +193,7 @@ python blur_humans.py street_photo.jpg
 **Console Output:**
 ```
 ======================================================================
-Human Blur Tool v3.1 - With Background Object Detection
+PyxelNyx v3.1 - With Background Object Detection
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...
@@ -232,7 +232,7 @@ python blur_humans.py traffic_video.mp4 --detection-model yolov8s.pt
 **Console Output:**
 ```
 ======================================================================
-Human Blur Tool v3.1 - With Background Object Detection
+PyxelNyx v3.1 - With Background Object Detection
 ======================================================================
 
 Loading YOLO model: yolov8n-seg.pt...

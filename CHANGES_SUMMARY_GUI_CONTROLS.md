@@ -1,7 +1,7 @@
 # GUI Controls for Object Detection Settings - Implementation Summary
 
 ## Overview
-Successfully implemented GUI controls for object detection settings in the human-blur-tool application.
+Successfully implemented GUI controls for object detection settings in the pyxelnyx application.
 
 ## Changes Made
 

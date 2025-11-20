@@ -2,7 +2,7 @@
 
 ## 🎯 What's New?
 
-Two powerful new options have been added to the Human Blur Tool GUI:
+Two powerful new options have been added to the PyxelNyx GUI:
 
 | Feature | Type | Default | Purpose |
 |---------|------|---------|---------|

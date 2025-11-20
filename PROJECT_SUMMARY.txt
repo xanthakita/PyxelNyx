@@ -5,7 +5,7 @@
 
 📊 PROJECT OVERVIEW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Repository: https://github.com/xanthakita/human-blur-tool.git
+Repository: https://github.com/xanthakita/pyxelnyx.git
 Language: Python 3.8+
 Framework: Tkinter (cross-platform)
 Version: v3.0 Enhanced
@@ -90,7 +90,7 @@ BACKUP:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Run the GUI:
-  $ cd /home/ubuntu/code_artifacts/human-blur-tool
+  $ cd /home/ubuntu/code_artifacts/pyxelnyx
   $ python gui.py
 
 Run the CLI:
@@ -105,15 +105,15 @@ Get Help:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Windows:
-  $ pyinstaller --onefile --windowed --name "HumanBlurTool" 
+  $ pyinstaller --onefile --windowed --name "PyxelNyx" 
       --icon=logo.png --add-data "logo.png;." gui.py
 
 macOS:
-  $ pyinstaller --onefile --windowed --name "HumanBlurTool" 
+  $ pyinstaller --onefile --windowed --name "PyxelNyx" 
       --icon=logo.png --add-data "logo.png:." gui.py
 
 Linux:
-  $ pyinstaller --onefile --windowed --name "HumanBlurTool" 
+  $ pyinstaller --onefile --windowed --name "PyxelNyx" 
       --add-data "logo.png:." gui.py
 
 See BUILD_EXECUTABLE.md for detailed instructions.
@@ -192,7 +192,7 @@ For questions, issues, or feature requests:
 ✨ SUMMARY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The Human Blur Tool now features a PRODUCTION-READY GUI that:
+The PyxelNyx now features a PRODUCTION-READY GUI that:
 
   ✅ Meets all specified requirements
   ✅ Provides excellent user experience

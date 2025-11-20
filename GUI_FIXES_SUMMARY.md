@@ -1,4 +1,4 @@
-# Human Blur Tool GUI - Critical Fixes Summary
+# PyxelNyx GUI - Critical Fixes Summary
 
 ## Issues Fixed
 

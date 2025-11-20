@@ -1,4 +1,4 @@
-# Human Blur Tool - GUI Layout Redesign Summary
+# PyxelNyx - GUI Layout Redesign Summary
 
 ## Date: November 19, 2025
 

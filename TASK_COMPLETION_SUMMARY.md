@@ -1,7 +1,7 @@
 # ✅ Task Completion Summary
 
 ## Assignment
-Add two new options to the Human Blur Tool GUI:
+Add two new options to the PyxelNyx GUI:
 1. Audio Handling Option - Allow users to keep or remove audio from videos
 2. Custom Filename Suffix - Allow users to specify custom suffix for output files
 
@@ -289,7 +289,7 @@ Both requested features are:
 
 ## 🎉 Mission Accomplished!
 
-The Human Blur Tool now has enhanced control options that allow users to:
+The PyxelNyx now has enhanced control options that allow users to:
 1. Choose whether to keep or remove audio from videos
 2. Customize the suffix added to output filenames
 
@@ -303,4 +303,4 @@ All requirements have been met, and the implementation is production-ready.
 **Documentation:** Comprehensive
 **Testing:** Ready for QA
 
-**Thank you for using the Human Blur Tool!** 🚀
+**Thank you for using the PyxelNyx!** 🚀

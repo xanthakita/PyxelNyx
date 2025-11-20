@@ -1027,7 +1027,7 @@ Note: Audio preservation in videos requires ffmpeg to be installed.
     
     # Initialize processor
     print("\n" + "="*70)
-    print("Human Blur Tool v3.1 - With Background Object Detection")
+    print("PyxelNyx v3.1 - With Background Object Detection")
     print("="*70 + "\n")
     
     processor = HumanBlurProcessor(

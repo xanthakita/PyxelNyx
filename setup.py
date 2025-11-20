@@ -13,13 +13,13 @@ readme_file = Path(__file__).parent / "README.md"
 long_description = readme_file.read_text(encoding="utf-8") if readme_file.exists() else ""
 
 setup(
-    name="human-blur-tool",
+    name="pyxelnyx",
     version="1.0.0",
     description="CLI tool to detect and blur humans in images for background analysis",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="DeepAgent",
-    url="https://github.com/yourusername/human-blur-tool",
+    url="https://github.com/yourusername/pyxelnyx",
     py_modules=["blur_humans"],
     python_requires=">=3.8",
     install_requires=[

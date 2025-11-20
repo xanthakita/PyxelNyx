@@ -1,6 +1,6 @@
-# Building Executables for Human Blur Tool GUI
+# Building Executables for PyxelNyx GUI
 
-This guide explains how to build standalone executables for the Human Blur Tool GUI on Windows, macOS, and Linux.
+This guide explains how to build standalone executables for the PyxelNyx GUI on Windows, macOS, and Linux.
 
 **✨ NEW: We now include a pre-configured PyInstaller spec file and build scripts for easy compilation!**
 
@@ -61,7 +61,7 @@ Before building executables, ensure you have:
 
 1. **Open Command Prompt or PowerShell** and navigate to the project directory:
    ```cmd
-   cd path\to\human-blur-tool
+   cd path\to\pyxelnyx
    ```
 
 2. **Run the build script**:
@@ -70,28 +70,28 @@ Before building executables, ensure you have:
    ```
 
 3. **Find your executable**:
-   - Location: `dist\HumanBlurTool.exe`
+   - Location: `dist\PyxelNyx.exe`
 
 ### Method 2: Using PyInstaller with Spec File (Manual)
 
 1. **Navigate to the project directory**:
    ```cmd
-   cd path\to\human-blur-tool
+   cd path\to\pyxelnyx
    ```
 
 2. **Build using the spec file**:
    ```cmd
-   pyinstaller HumanBlurTool.spec --clean
+   pyinstaller PyxelNyx.spec --clean
    ```
 
 3. **Find your executable**:
-   - Location: `dist\HumanBlurTool.exe`
+   - Location: `dist\PyxelNyx.exe`
 
 ### Testing the Windows Executable
 
 ```cmd
 cd dist
-HumanBlurTool.exe
+PyxelNyx.exe
 ```
 
 ### Optional: Create Installer with Inno Setup
@@ -109,7 +109,7 @@ For professional distribution:
 
 1. **Open Terminal** and navigate to the project directory:
    ```bash
-   cd /path/to/human-blur-tool
+   cd /path/to/pyxelnyx
    ```
 
 2. **Run the build script**:
@@ -118,34 +118,34 @@ For professional distribution:
    ```
 
 3. **Find your application**:
-   - Location: `dist/HumanBlurTool.app`
+   - Location: `dist/PyxelNyx.app`
 
 ### Method 2: Using PyInstaller with Spec File (Manual)
 
 1. **Navigate to the project directory**:
    ```bash
-   cd /path/to/human-blur-tool
+   cd /path/to/pyxelnyx
    ```
 
 2. **Build using the spec file**:
    ```bash
-   pyinstaller HumanBlurTool.spec --clean
+   pyinstaller PyxelNyx.spec --clean
    ```
 
 3. **Find your application**:
-   - Location: `dist/HumanBlurTool.app`
+   - Location: `dist/PyxelNyx.app`
 
 ### Testing the macOS Application
 
 ```bash
-open dist/HumanBlurTool.app
+open dist/PyxelNyx.app
 ```
 
 ### Removing Quarantine Attribute
 
 If macOS shows a security warning:
 ```bash
-xattr -cr dist/HumanBlurTool.app
+xattr -cr dist/PyxelNyx.app
 ```
 
 ### Code Signing (for Distribution)
@@ -154,10 +154,10 @@ If you plan to distribute the macOS app, you'll need to code sign it:
 
 ```bash
 # Sign the app
-codesign --deep --force --verify --verbose --sign "Developer ID Application: Your Name" dist/HumanBlurTool.app
+codesign --deep --force --verify --verbose --sign "Developer ID Application: Your Name" dist/PyxelNyx.app
 
 # Verify signature
-codesign --verify --deep --strict --verbose=2 dist/HumanBlurTool.app
+codesign --verify --deep --strict --verbose=2 dist/PyxelNyx.app
 ```
 
 ### Optional: Create DMG Installer
@@ -168,13 +168,13 @@ brew install create-dmg
 
 # Create DMG
 create-dmg \
-  --volname "Human Blur Tool" \
+  --volname "PyxelNyx" \
   --window-pos 200 120 \
   --window-size 600 400 \
   --icon-size 100 \
   --app-drop-link 425 120 \
-  "HumanBlurTool.dmg" \
-  "dist/HumanBlurTool.app"
+  "PyxelNyx.dmg" \
+  "dist/PyxelNyx.app"
 ```
 
 ---
@@ -185,7 +185,7 @@ create-dmg \
 
 1. **Open Terminal** and navigate to the project directory:
    ```bash
-   cd /path/to/human-blur-tool
+   cd /path/to/pyxelnyx
    ```
 
 2. **Run the build script**:
@@ -194,32 +194,32 @@ create-dmg \
    ```
 
 3. **Find your executable**:
-   - Location: `dist/HumanBlurTool`
+   - Location: `dist/PyxelNyx`
 
 ### Method 2: Using PyInstaller with Spec File (Manual)
 
 1. **Navigate to the project directory**:
    ```bash
-   cd /path/to/human-blur-tool
+   cd /path/to/pyxelnyx
    ```
 
 2. **Build using the spec file**:
    ```bash
-   pyinstaller HumanBlurTool.spec --clean
+   pyinstaller PyxelNyx.spec --clean
    ```
 
 3. **Find your executable**:
-   - Location: `dist/HumanBlurTool`
+   - Location: `dist/PyxelNyx`
 
 4. **Make it executable** (if not already):
    ```bash
-   chmod +x dist/HumanBlurTool
+   chmod +x dist/PyxelNyx
    ```
 
 ### Testing the Linux Executable
 
 ```bash
-./dist/HumanBlurTool
+./dist/PyxelNyx
 ```
 
 ---
@@ -296,7 +296,7 @@ def main():
 
 ### Build Configuration Files
 
-- **HumanBlurTool.spec**: Complete PyInstaller configuration with all dependencies
+- **PyxelNyx.spec**: Complete PyInstaller configuration with all dependencies
 - **runtime_hook.py**: Fixes multiprocessing initialization
 - **build.sh**: Automated build script for macOS/Linux
 - **build.bat**: Automated build script for Windows
@@ -332,16 +332,16 @@ For Debian/Ubuntu users:
    mkdir -p package/usr/share/applications
    mkdir -p package/usr/share/icons
    
-   cp dist/HumanBlurTool package/usr/local/bin/
+   cp dist/PyxelNyx package/usr/local/bin/
    cp logo.png package/usr/share/icons/humanblur.png
    ```
 
 3. **Create desktop entry** (`package/usr/share/applications/humanblur.desktop`):
    ```ini
    [Desktop Entry]
-   Name=Human Blur Tool
+   Name=PyxelNyx
    Comment=AI-Powered Privacy Protection
-   Exec=/usr/local/bin/HumanBlurTool
+   Exec=/usr/local/bin/PyxelNyx
    Icon=/usr/share/icons/humanblur.png
    Terminal=false
    Type=Application
@@ -356,7 +356,7 @@ For Debian/Ubuntu users:
 ### Testing the Linux Executable
 
 ```bash
-./dist/HumanBlurTool
+./dist/PyxelNyx
 ```
 
 ---
@@ -366,10 +366,10 @@ For Debian/Ubuntu users:
 For more control, create a `.spec` file:
 
 ```bash
-pyinstaller --name "HumanBlurTool" gui.py --windowed --onefile
+pyinstaller --name "PyxelNyx" gui.py --windowed --onefile
 ```
 
-This creates `HumanBlurTool.spec`. Edit it for advanced configuration:
+This creates `PyxelNyx.spec`. Edit it for advanced configuration:
 
 ```python
 # -*- mode: python ; coding: utf-8 -*-
@@ -407,7 +407,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='HumanBlurTool',
+    name='PyxelNyx',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -426,7 +426,7 @@ exe = EXE(
 # For macOS .app bundle
 app = BUNDLE(
     exe,
-    name='HumanBlurTool.app',
+    name='PyxelNyx.app',
     icon='logo.png',
     bundle_identifier='org.globalemancipation.humanblur',
     info_plist={
@@ -438,7 +438,7 @@ app = BUNDLE(
 
 Build using the spec file:
 ```bash
-pyinstaller HumanBlurTool.spec
+pyinstaller PyxelNyx.spec
 ```
 
 ---
@@ -481,7 +481,7 @@ pyinstaller --onefile --windowed --strip gui.py
 
 **Solution**: 
 1. Check the error message for the missing module name
-2. Add it to the `hiddenimports` list in `HumanBlurTool.spec`
+2. Add it to the `hiddenimports` list in `PyxelNyx.spec`
 3. Rebuild using the spec file
 
 Example:
@@ -509,7 +509,7 @@ hiddenimports=[
 1. Verify `multiprocessing.freeze_support()` is called in `main()`
 2. Check that `runtime_hook.py` is included in the spec file
 3. Enable console mode temporarily to see error messages:
-   - In `HumanBlurTool.spec`, change `console=False` to `console=True`
+   - In `PyxelNyx.spec`, change `console=False` to `console=True`
    - Rebuild and check the console output
 
 ### Issue: YOLO models not downloading
@@ -553,7 +553,7 @@ hiddenimports=[
 
 2. **Create directory-based build instead of single file**:
    
-   In `HumanBlurTool.spec`, change the EXE section:
+   In `PyxelNyx.spec`, change the EXE section:
    ```python
    exe = EXE(
        pyz,
@@ -565,7 +565,7 @@ hiddenimports=[
        # Keep only:
        [],
        exclude_binaries=True,  # Add this line
-       name='HumanBlurTool',
+       name='PyxelNyx',
        # ... rest of the config
    )
    
@@ -578,7 +578,7 @@ hiddenimports=[
        strip=False,
        upx=True,
        upx_exclude=[],
-       name='HumanBlurTool'
+       name='PyxelNyx'
    )
    ```
    
@@ -592,12 +592,12 @@ hiddenimports=[
 
 **Solution**: Remove quarantine attribute:
 ```bash
-xattr -cr dist/HumanBlurTool.app
+xattr -cr dist/PyxelNyx.app
 ```
 
 **For distribution:** Code sign the app (requires Apple Developer account):
 ```bash
-codesign --deep --force --verify --verbose --sign "Developer ID Application: Your Name" dist/HumanBlurTool.app
+codesign --deep --force --verify --verbose --sign "Developer ID Application: Your Name" dist/PyxelNyx.app
 ```
 
 ### Issue: Windows SmartScreen warning
