@@ -16,6 +16,26 @@ from blur_humans import HumanBlurProcessor
 from PIL import Image, ImageTk
 
 
+def get_resource_path(relative_path):
+    """
+    Get absolute path to resource, works for both development and PyInstaller frozen mode.
+    
+    Args:
+        relative_path: Relative path to resource file
+        
+    Returns:
+        Absolute path to resource
+    """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = Path(sys._MEIPASS)
+    except AttributeError:
+        # Running in normal Python environment
+        base_path = Path(__file__).parent
+    
+    return base_path / relative_path
+
+
 class HelpDialog:
     """Help dialog showing instructions for both GUI and CLI usage."""
     
@@ -266,12 +286,12 @@ class HumanBlurGUI:
         header_frame = ttk.Frame(main_container)
         header_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        # Try to load and display logo
-        logo_path = Path(__file__).parent / "logo.png"
+        # Try to load and display logo in upper right corner
+        logo_path = get_resource_path("logo.png")
         if logo_path.exists():
             try:
                 logo_img = Image.open(logo_path)
-                # Resize logo to small size (100x100)
+                # Resize logo to small size (80x80) while maintaining aspect ratio
                 logo_img.thumbnail((80, 80), Image.Resampling.LANCZOS)
                 self.logo_photo = ImageTk.PhotoImage(logo_img)
                 logo_label = ttk.Label(header_frame, image=self.logo_photo)
