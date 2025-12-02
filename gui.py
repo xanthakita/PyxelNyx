@@ -76,7 +76,9 @@ GETTING STARTED
    - Blur Intensity: How strong the blur effect is (51-301)
    - Blur Passes: Number of blur iterations for stronger effect (1-10)
    - Confidence: Detection sensitivity (0.1-1.0, default 0.33)
-   - Model: Choose speed vs accuracy trade-off
+   - Person Model: Choose speed vs accuracy trade-off
+   - Skin Tone Detection: Enable temporal tracking to detect skin tones
+     near YOLO-detected regions for better coverage
 
 4. Configure Output Settings (Optional):
    - Filename Suffix: Customize the suffix added to output files
@@ -248,7 +250,7 @@ class HumanBlurGUI:
     def __init__(self, root):
         """Initialize the enhanced GUI application."""
         self.root = root
-        self.root.title("PyxelNyx v3.0 - Enhanced")
+        self.root.title("PyxelNyx v3.5 - Enhanced")
         # Set initial size and minimum size - compact to fit on standard screens
         self.root.geometry("1000x720")
         self.root.minsize(950, 650)
@@ -265,6 +267,7 @@ class HumanBlurGUI:
         self.keep_audio = tk.BooleanVar(value=True)  # New: Audio handling option
         self.filename_suffix = tk.StringVar(value="-background")  # New: Custom filename suffix
         self.frame_interval = tk.IntVar(value=1)  # New: Frame skipping interval (1 = every frame)
+        self.enable_skin_detection = tk.BooleanVar(value=False)  # New: Skin tone detection option
         self.processing = False
         self.last_output_path = None
         
@@ -311,7 +314,7 @@ class HumanBlurGUI:
         
         title_label = ttk.Label(
             title_section, 
-            text="PyxelNyx v3.0", 
+            text="PyxelNyx v3.5", 
             font=("Arial", 20, "bold")
         )
         title_label.pack(anchor=tk.W)
@@ -462,9 +465,9 @@ class HumanBlurGUI:
         
         # Model Selection
         model_frame = ttk.Frame(advanced_frame)
-        model_frame.pack(fill=tk.X)
+        model_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(model_frame, text="Model:", width=10).pack(side=tk.LEFT)
+        ttk.Label(model_frame, text="Person Model:", width=10).pack(side=tk.LEFT)
         model_combo = ttk.Combobox(
             model_frame,
             textvariable=self.model_name,
@@ -480,6 +483,23 @@ class HumanBlurGUI:
         )
         model_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
         model_combo.current(0)
+        
+        # Skin Tone Detection Option
+        skin_detection_frame = ttk.Frame(advanced_frame)
+        skin_detection_frame.pack(fill=tk.X)
+        
+        self.skin_detection_checkbox = ttk.Checkbutton(
+            skin_detection_frame,
+            text="Enable Skin Tone Detection (with temporal tracking)",
+            variable=self.enable_skin_detection
+        )
+        self.skin_detection_checkbox.pack(anchor=tk.W)
+        ttk.Label(
+            skin_detection_frame,
+            text="(Detects skin tones near YOLO regions for better coverage)",
+            font=("Arial", 8),
+            foreground="gray"
+        ).pack(anchor=tk.W, padx=(20, 0))
         
         # Output Settings Section (Right Column - Row 2)
         output_frame = ttk.LabelFrame(content_frame, text="Output Settings", padding="8")
@@ -808,6 +828,7 @@ class HumanBlurGUI:
                 filename_suffix=self.filename_suffix.get(),
                 keep_audio=self.keep_audio.get(),
                 frame_interval=self.frame_interval.get(),
+                enable_skin_detection=self.enable_skin_detection.get(),
                 progress_callback=self.progress_callback
             )
             
@@ -879,8 +900,9 @@ class HumanBlurGUI:
                     self.current_file_name.set(f"[{idx}/{total_files}] {file_path.name}")
                     self.update_status(f"Processing {idx}/{total_files}: {file_path.name}", "blue")
                     
-                    # Reset processor's detection list for each file
+                    # Reset processor's detection and skin tone tracking for each file
                     processor.all_detections = []
+                    processor.skin_tone_samples = []
                     
                     # Process based on file type
                     try:

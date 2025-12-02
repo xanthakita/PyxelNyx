@@ -37,7 +37,7 @@ class HumanBlurProcessor:
     SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
     SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = False, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, frame_interval: int = 1, progress_callback=None):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = False, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, frame_interval: int = 1, enable_skin_detection: bool = False, progress_callback=None):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -51,6 +51,7 @@ class HumanBlurProcessor:
             filename_suffix: Custom suffix for output filenames (default: '-background')
             keep_audio: Keep audio in output videos (default: True)
             frame_interval: Process every Nth frame (1 = every frame, 3 = every 3rd frame, etc.)
+            enable_skin_detection: Enable skin tone detection with temporal tracking (default: False)
             progress_callback: Optional callback function for progress updates (receives current, total)
         """
         self.blur_intensity = blur_intensity if blur_intensity % 2 == 1 else blur_intensity + 1
@@ -62,7 +63,12 @@ class HumanBlurProcessor:
         self.filename_suffix = filename_suffix  # Store custom filename suffix
         self.keep_audio = keep_audio  # Store audio handling preference
         self.frame_interval = max(1, frame_interval)  # Store frame interval (minimum 1)
+        self.enable_skin_detection = enable_skin_detection  # Store skin detection preference
         self.progress_callback = progress_callback  # Store progress callback
+        
+        # Temporal tracking for skin tone detection
+        self.skin_tone_samples = []  # Store YCrCb skin tone samples from previous frames
+        self.max_skin_samples = 100  # Maximum number of skin tone samples to track
         
         print(f"Loading YOLO model: {model_name}...")
         print(f"Segmentation mode: {'Enabled (Lasso effect)' if self.use_segmentation else 'Disabled (Box blur)'}")
@@ -71,6 +77,8 @@ class HumanBlurProcessor:
             print(f"Blur settings: intensity={self.blur_intensity}, passes={self.blur_passes}")
         else:
             print(f"Black mask mode enabled")
+        if self.enable_skin_detection:
+            print(f"Skin tone detection: ENABLED (with temporal tracking)")
         if self.frame_interval > 1:
             print(f"Frame skipping enabled: processing every {self.frame_interval} frame(s)")
             print(f"⚠ Audio will be automatically dropped when frame skipping is enabled")
@@ -268,6 +276,131 @@ class HumanBlurProcessor:
         for mask in masks[1:]:
             combined = np.maximum(combined, mask.astype(np.float32))
         
+        return combined
+    
+    def update_skin_tone_samples(self, image: np.ndarray, yolo_mask: np.ndarray):
+        """
+        Update temporal tracking with skin tone samples from YOLO-detected regions.
+        
+        Args:
+            image: Input image (BGR format)
+            yolo_mask: Binary mask from YOLO detection
+        """
+        if not self.enable_skin_detection:
+            return
+        
+        # Convert image to YCrCb color space
+        ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
+        
+        # Sample skin tones from the YOLO-detected region
+        mask_uint8 = (yolo_mask * 255).astype(np.uint8)
+        skin_pixels = ycrcb[mask_uint8 > 0]
+        
+        # Add samples to our temporal tracking (sample every 10th pixel to avoid too many samples)
+        if len(skin_pixels) > 0:
+            sampled_pixels = skin_pixels[::10]  # Sample every 10th pixel
+            self.skin_tone_samples.extend(sampled_pixels.tolist())
+            
+            # Keep only the most recent samples
+            if len(self.skin_tone_samples) > self.max_skin_samples:
+                self.skin_tone_samples = self.skin_tone_samples[-self.max_skin_samples:]
+    
+    def detect_skin_tones_ycrcb(self, image: np.ndarray, search_mask: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Detect skin tones in image using YCrCb color space with temporal tracking.
+        
+        Args:
+            image: Input image (BGR format)
+            search_mask: Optional binary mask indicating where to search for skin tones
+                        (typically expanded YOLO regions)
+        
+        Returns:
+            Binary mask of detected skin tones
+        """
+        if not self.enable_skin_detection:
+            return np.zeros(image.shape[:2], dtype=np.uint8)
+        
+        # Convert to YCrCb color space
+        ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
+        
+        # Define base skin tone ranges in YCrCb (covers diverse skin tones)
+        # These ranges are well-established for skin detection
+        lower_skin = np.array([0, 133, 77], dtype=np.uint8)
+        upper_skin = np.array([255, 173, 127], dtype=np.uint8)
+        
+        # Create base skin mask
+        skin_mask = cv2.inRange(ycrcb, lower_skin, upper_skin)
+        
+        # If we have temporal samples, create an adaptive mask
+        if len(self.skin_tone_samples) > 10:  # Need at least 10 samples
+            # Calculate mean and std of our temporal samples
+            samples_array = np.array(self.skin_tone_samples)
+            mean_skin = samples_array.mean(axis=0)
+            std_skin = samples_array.std(axis=0)
+            
+            # Create adaptive range based on temporal data (±2 standard deviations)
+            adaptive_lower = np.clip(mean_skin - 2 * std_skin, 0, 255).astype(np.uint8)
+            adaptive_upper = np.clip(mean_skin + 2 * std_skin, 0, 255).astype(np.uint8)
+            
+            # Create adaptive mask
+            adaptive_mask = cv2.inRange(ycrcb, adaptive_lower, adaptive_upper)
+            
+            # Combine base and adaptive masks (union)
+            skin_mask = cv2.bitwise_or(skin_mask, adaptive_mask)
+        
+        # Apply search mask if provided (only detect skin in specified regions)
+        if search_mask is not None:
+            search_mask_uint8 = (search_mask * 255).astype(np.uint8)
+            skin_mask = cv2.bitwise_and(skin_mask, search_mask_uint8)
+        
+        # Apply morphological operations to clean up the mask
+        # Remove noise
+        kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        skin_mask = cv2.morphologyEx(skin_mask, cv2.MORPH_OPEN, kernel_open, iterations=1)
+        
+        # Fill gaps and smooth
+        kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        skin_mask = cv2.morphologyEx(skin_mask, cv2.MORPH_CLOSE, kernel_close, iterations=2)
+        
+        # Convert to float mask
+        return (skin_mask > 127).astype(np.float32)
+    
+    def create_expanded_search_region(self, mask: np.ndarray, expansion_pixels: int = 75) -> np.ndarray:
+        """
+        Create an expanded search region around YOLO detections for skin tone detection.
+        
+        Args:
+            mask: Binary YOLO detection mask
+            expansion_pixels: Number of pixels to expand (default: 75 for wider search)
+        
+        Returns:
+            Expanded binary mask for searching
+        """
+        # Convert to uint8 for morphological operations
+        mask_uint8 = (mask * 255).astype(np.uint8)
+        
+        # Create a large kernel for expansion
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (expansion_pixels, expansion_pixels))
+        
+        # Dilate to create search region
+        expanded_mask = cv2.dilate(mask_uint8, kernel, iterations=1)
+        
+        # Convert back to float mask
+        return (expanded_mask > 127).astype(np.float32)
+    
+    def combine_yolo_and_skin_masks(self, yolo_mask: np.ndarray, skin_mask: np.ndarray) -> np.ndarray:
+        """
+        Combine YOLO detection mask with skin tone detection mask.
+        
+        Args:
+            yolo_mask: Binary mask from YOLO detection
+            skin_mask: Binary mask from skin tone detection
+        
+        Returns:
+            Combined binary mask (union of both masks)
+        """
+        # Union of both masks - mark a pixel if either mask detects it
+        combined = np.maximum(yolo_mask, skin_mask)
         return combined
     
     def expand_mask_to_edges(self, mask: np.ndarray, expansion_pixels: int = 25) -> np.ndarray:
@@ -541,6 +674,21 @@ class HumanBlurProcessor:
                 combined_mask = self.combine_masks(masks_only)
                 
                 if combined_mask is not None:
+                    # Update temporal tracking with skin tone samples from YOLO detections
+                    if self.enable_skin_detection:
+                        self.update_skin_tone_samples(image, combined_mask)
+                    
+                    # Detect skin tones in expanded regions if enabled
+                    if self.enable_skin_detection:
+                        print(f"  Detecting skin tones in expanded regions...")
+                        # Create expanded search region
+                        search_region = self.create_expanded_search_region(combined_mask, expansion_pixels=75)
+                        # Detect skin tones within the search region
+                        skin_mask = self.detect_skin_tones_ycrcb(image, search_mask=search_region)
+                        # Combine YOLO mask with skin tone mask
+                        combined_mask = self.combine_yolo_and_skin_masks(combined_mask, skin_mask)
+                        print(f"  ✓ Skin tone detection applied")
+                    
                     if self.mask_type == 'blur':
                         print(f"  Applying unified lasso blur to all detected people...")
                         result = self.blur_with_mask(result, combined_mask, None)
@@ -798,6 +946,19 @@ class HumanBlurProcessor:
                         combined_mask = self.combine_masks(masks_only)
                         
                         if combined_mask is not None:
+                            # Update temporal tracking with skin tone samples from YOLO detections
+                            if self.enable_skin_detection:
+                                self.update_skin_tone_samples(frame, combined_mask)
+                            
+                            # Detect skin tones in expanded regions if enabled
+                            if self.enable_skin_detection:
+                                # Create expanded search region
+                                search_region = self.create_expanded_search_region(combined_mask, expansion_pixels=75)
+                                # Detect skin tones within the search region
+                                skin_mask = self.detect_skin_tones_ycrcb(frame, search_mask=search_region)
+                                # Combine YOLO mask with skin tone mask
+                                combined_mask = self.combine_yolo_and_skin_masks(combined_mask, skin_mask)
+                            
                             if self.mask_type == 'blur':
                                 result = self.blur_with_mask(result, combined_mask, None)
                             else:  # black mask
@@ -924,6 +1085,7 @@ class HumanBlurProcessor:
         for image_path in image_files:
             current += 1
             self.all_detections = []  # Reset detections for each file
+            self.skin_tone_samples = []  # Reset skin tone samples for each file
             print(f"Processing [{current}/{total_files}] (Image): {image_path.name}")
             if self.process_image(image_path, confidence=confidence):
                 successful += 1
@@ -933,6 +1095,7 @@ class HumanBlurProcessor:
         for video_path in video_files:
             current += 1
             self.all_detections = []  # Reset detections for each file
+            self.skin_tone_samples = []  # Reset skin tone samples for each file
             print(f"Processing [{current}/{total_files}] (Video): {video_path.name}")
             if self.process_video(video_path, confidence=confidence):
                 successful += 1
