@@ -37,7 +37,7 @@ class HumanBlurProcessor:
     SUPPORTED_VIDEO_FORMATS = {'.mp4', '.mov'}
     SUPPORTED_FORMATS = SUPPORTED_IMAGE_FORMATS | SUPPORTED_VIDEO_FORMATS
     
-    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = False, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, progress_callback=None):
+    def __init__(self, model_name: str = 'yolov8n-seg.pt', blur_intensity: int = 151, blur_passes: int = 3, mask_type: str = 'black', enable_object_detection: bool = False, detection_model: str = 'yolov8m.pt', filename_suffix: str = '-background', keep_audio: bool = True, frame_interval: int = 1, progress_callback=None):
         """
         Initialize the human blur processor with segmentation support.
         
@@ -50,6 +50,7 @@ class HumanBlurProcessor:
             detection_model: YOLO model for object detection (default: yolov8m.pt)
             filename_suffix: Custom suffix for output filenames (default: '-background')
             keep_audio: Keep audio in output videos (default: True)
+            frame_interval: Process every Nth frame (1 = every frame, 3 = every 3rd frame, etc.)
             progress_callback: Optional callback function for progress updates (receives current, total)
         """
         self.blur_intensity = blur_intensity if blur_intensity % 2 == 1 else blur_intensity + 1
@@ -60,6 +61,7 @@ class HumanBlurProcessor:
         self.all_detections = []  # Store all object detections
         self.filename_suffix = filename_suffix  # Store custom filename suffix
         self.keep_audio = keep_audio  # Store audio handling preference
+        self.frame_interval = max(1, frame_interval)  # Store frame interval (minimum 1)
         self.progress_callback = progress_callback  # Store progress callback
         
         print(f"Loading YOLO model: {model_name}...")
@@ -69,6 +71,9 @@ class HumanBlurProcessor:
             print(f"Blur settings: intensity={self.blur_intensity}, passes={self.blur_passes}")
         else:
             print(f"Black mask mode enabled")
+        if self.frame_interval > 1:
+            print(f"Frame skipping enabled: processing every {self.frame_interval} frame(s)")
+            print(f"⚠ Audio will be automatically dropped when frame skipping is enabled")
         
         try:
             self.model = YOLO(model_name)
@@ -642,7 +647,18 @@ class HumanBlurProcessor:
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             
+            # Adjust FPS for frame skipping
+            output_fps = fps / self.frame_interval
+            
             print(f"  Video properties: {width}x{height} @ {fps:.2f} FPS, {total_frames} frames")
+            
+            if self.frame_interval > 1:
+                print(f"  Frame skipping: processing every {self.frame_interval} frame(s)")
+                print(f"  Output FPS will be: {output_fps:.2f} (original: {fps:.2f})")
+                # Force audio to be disabled when frame skipping
+                actual_keep_audio = False
+            else:
+                actual_keep_audio = self.keep_audio
             
             # Determine output path
             if output_path is None:
@@ -652,7 +668,7 @@ class HumanBlurProcessor:
             ffmpeg_available = self.check_ffmpeg_available()
             
             # Try to extract audio if ffmpeg is available and user wants to keep audio
-            if ffmpeg_available and self.keep_audio:
+            if ffmpeg_available and actual_keep_audio:
                 audio_path = Path(tempfile.mktemp(suffix='.aac'))
                 print(f"  Extracting audio...")
                 has_audio = self.extract_audio(video_path, audio_path)
@@ -660,8 +676,11 @@ class HumanBlurProcessor:
                     print(f"  ✓ Audio extracted successfully")
                 else:
                     print(f"  ℹ No audio track found or unable to extract")
-            elif not self.keep_audio:
-                print(f"  ℹ Audio removal requested - output will have no audio")
+            elif not actual_keep_audio:
+                if self.frame_interval > 1:
+                    print(f"  ℹ Audio automatically dropped due to frame skipping")
+                else:
+                    print(f"  ℹ Audio removal requested - output will have no audio")
             else:
                 print(f"  ⚠ ffmpeg not available - audio will not be preserved")
                 print(f"  ℹ Install ffmpeg to enable audio preservation")
@@ -675,7 +694,7 @@ class HumanBlurProcessor:
             
             # Define codec and create VideoWriter
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Use mp4v codec
-            out = cv2.VideoWriter(str(video_writer_path), fourcc, fps, (width, height))
+            out = cv2.VideoWriter(str(video_writer_path), fourcc, output_fps, (width, height))
             
             if not out.isOpened():
                 print(f"  ✗ Error: Could not create video writer")
@@ -686,6 +705,7 @@ class HumanBlurProcessor:
             
             frame_count = 0
             processed_count = 0
+            frames_written = 0
             
             while True:
                 ret, frame = cap.read()
@@ -701,6 +721,10 @@ class HumanBlurProcessor:
                 # Show progress every 10 frames or at the end
                 if frame_count % 10 == 0 or frame_count == total_frames:
                     print(f"  Processing frame {frame_count}/{total_frames} ({frame_count*100//total_frames}%)", end='\r')
+                
+                # Skip frames based on interval (process frames 1, 1+interval, 1+2*interval, etc.)
+                if (frame_count - 1) % self.frame_interval != 0:
+                    continue
                 
                 # Detect humans with segmentation masks
                 detections = self.detect_humans_with_masks(frame, confidence)
@@ -745,15 +769,21 @@ class HumanBlurProcessor:
                                 result = self.black_mask_with_box(result, bbox)
                     
                     out.write(result)
+                    frames_written += 1
                 else:
                     # No humans detected, write original frame
                     out.write(frame)
+                    frames_written += 1
             
             # Release resources
             cap.release()
             out.release()
             
-            print(f"\n  ✓ Processed {frame_count} frames ({processed_count} frames with humans detected)")
+            if self.frame_interval > 1:
+                print(f"\n  ✓ Processed {frames_written}/{frame_count} frames ({processed_count} frames with humans detected)")
+                print(f"  ℹ Skipped {frame_count - frames_written} frames due to frame interval setting")
+            else:
+                print(f"\n  ✓ Processed {frame_count} frames ({processed_count} frames with humans detected)")
             
             # Merge audio back if available
             if has_audio and ffmpeg_available and audio_path.exists():
