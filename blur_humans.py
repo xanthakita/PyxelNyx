@@ -270,6 +270,33 @@ class HumanBlurProcessor:
         
         return combined
     
+    def expand_mask_to_edges(self, mask: np.ndarray, expansion_pixels: int = 25) -> np.ndarray:
+        """
+        Expand segmentation mask using morphological dilation to ensure processing 
+        reaches frame edges when people are detected near borders.
+        
+        Args:
+            mask: Binary segmentation mask
+            expansion_pixels: Number of pixels to expand the mask (default: 25 to cover the 15-20 pixel border issue)
+            
+        Returns:
+            Expanded binary mask
+        """
+        # Convert to uint8 for morphological operations
+        mask_uint8 = (mask * 255).astype(np.uint8)
+        
+        # Create a larger elliptical kernel for expansion
+        # This ensures smooth expansion that reaches edges
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (expansion_pixels, expansion_pixels))
+        
+        # Dilate the mask to expand it
+        expanded_mask = cv2.dilate(mask_uint8, kernel, iterations=1)
+        
+        # Convert back to binary float mask
+        expanded_mask = (expanded_mask > 127).astype(np.float32)
+        
+        return expanded_mask
+    
     def blur_with_mask(self, image: np.ndarray, mask: np.ndarray, bbox: np.ndarray) -> np.ndarray:
         """
         Apply blur to image using segmentation mask (lasso effect).
@@ -284,8 +311,8 @@ class HumanBlurProcessor:
         """
         result = image.copy()
         
-        # Create a full image mask
-        full_mask = mask.astype(np.float32)
+        # Expand mask to ensure processing reaches frame edges (fixes border issue)
+        full_mask = self.expand_mask_to_edges(mask)
         
         # Apply intense blur to entire image
         blurred_full = self.apply_intense_blur(image, self.blur_intensity, self.blur_passes)
@@ -314,8 +341,8 @@ class HumanBlurProcessor:
         """
         result = image.copy()
         
-        # Create a full image mask
-        full_mask = mask.astype(np.float32)
+        # Expand mask to ensure processing reaches frame edges (fixes border issue)
+        full_mask = self.expand_mask_to_edges(mask)
         
         # Create black image with same shape
         black_image = np.zeros_like(image)
@@ -343,6 +370,14 @@ class HumanBlurProcessor:
         result = image.copy()
         x1, y1, x2, y2 = map(int, bbox)
         
+        # Expand bounding box to fix border issue (add 25 pixels padding)
+        h, w = image.shape[:2]
+        expansion = 25
+        x1 = max(0, x1 - expansion)
+        y1 = max(0, y1 - expansion)
+        x2 = min(w, x2 + expansion)
+        y2 = min(h, y2 + expansion)
+        
         # Extract and blur region
         region = result[y1:y2, x1:x2]
         if region.size > 0:
@@ -364,6 +399,14 @@ class HumanBlurProcessor:
         """
         result = image.copy()
         x1, y1, x2, y2 = map(int, bbox)
+        
+        # Expand bounding box to fix border issue (add 25 pixels padding)
+        h, w = image.shape[:2]
+        expansion = 25
+        x1 = max(0, x1 - expansion)
+        y1 = max(0, y1 - expansion)
+        x2 = min(w, x2 + expansion)
+        y2 = min(h, y2 + expansion)
         
         # Replace region with black
         result[y1:y2, x1:x2] = 0
@@ -985,8 +1028,8 @@ Note: Audio preservation in videos requires ffmpeg to be installed.
     parser.add_argument(
         '-c', '--confidence',
         type=float,
-        default=0.5,
-        help='Detection confidence threshold (0.0-1.0, default: 0.5)'
+        default=0.33,
+        help='Detection confidence threshold (0.0-1.0, default: 0.33)'
     )
     
     parser.add_argument(

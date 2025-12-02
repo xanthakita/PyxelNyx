@@ -75,7 +75,7 @@ GETTING STARTED
 3. Adjust Settings (Optional):
    - Blur Intensity: How strong the blur effect is (51-301)
    - Blur Passes: Number of blur iterations for stronger effect (1-10)
-   - Confidence: Detection sensitivity (0.1-1.0, default 0.5)
+   - Confidence: Detection sensitivity (0.1-1.0, default 0.33)
    - Model: Choose speed vs accuracy trade-off
 
 4. Configure Output Settings (Optional):
@@ -259,7 +259,7 @@ class HumanBlurGUI:
         self.mask_type = tk.StringVar(value="black")
         self.blur_intensity = tk.IntVar(value=151)
         self.blur_passes = tk.IntVar(value=3)
-        self.confidence = tk.DoubleVar(value=0.5)
+        self.confidence = tk.DoubleVar(value=0.33)
         self.model_name = tk.StringVar(value="yolov8n-seg.pt")
         self.media_type = tk.StringVar(value="both")
         self.keep_audio = tk.BooleanVar(value=True)  # New: Audio handling option
@@ -455,7 +455,7 @@ class HumanBlurGUI:
         )
         self.confidence_slider.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         
-        self.confidence_label = ttk.Label(confidence_frame, text="0.50", width=5)
+        self.confidence_label = ttk.Label(confidence_frame, text="0.33", width=5)
         self.confidence_label.pack(side=tk.LEFT)
         
         self.confidence.trace_add("write", self.update_confidence_label)
