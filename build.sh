@@ -1,9 +1,9 @@
 #!/bin/bash
-# Build script for Human Blur Tool GUI using PyInstaller
+# Build script for PyxelNyx v3.0 GUI using PyInstaller
 # This script handles the compilation process on macOS and Linux
 
 echo "======================================"
-echo "Human Blur Tool - Build Script"
+echo "PyxelNyx v3.0 - Build Script"
 echo "======================================"
 echo ""
 
