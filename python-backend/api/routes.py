@@ -1,5 +1,6 @@
 import queue
 import threading
+import traceback
 import uuid
 import json
 from pathlib import Path
@@ -43,9 +44,22 @@ def _run_job(job_id: str, req: ProcessRequest) -> None:
         job.queue.put(("progress", {
             "current": current,
             "total": total,
-            "file": input_path.name if input_path.is_file() else "",
+            "file": input_path.name,
             "percent": round(percent, 1),
         }))
+
+    def make_progress_callback(fp: Path):
+        def cb(current: int, total: int) -> None:
+            if job.cancelled:
+                return
+            percent = (current / total * 100) if total > 0 else 0
+            job.queue.put(("progress", {
+                "current": current,
+                "total": total,
+                "file": fp.name,
+                "percent": round(percent, 1),
+            }))
+        return cb
 
     try:
         processor = HumanBlurProcessor(
@@ -92,7 +106,8 @@ def _run_job(job_id: str, req: ProcessRequest) -> None:
                     "cancelled": False,
                 }))
             else:
-                job.queue.put(("error", {"message": f"Processing failed for {input_path.name}"}))
+                # No humans detected — valid outcome, not an error
+                job.queue.put(("complete", {"successful": 0, "total": 1, "output_path": str(input_path), "cancelled": False}))
 
         elif input_path.is_dir():
             # Determine which formats to scan
@@ -128,6 +143,8 @@ def _run_job(job_id: str, req: ProcessRequest) -> None:
                 if ext in supported_image:
                     job.queue.put(("progress", {"current": 0, "total": 1, "file": file_path.name, "percent": 0}))
 
+                processor.progress_callback = make_progress_callback(file_path)
+
                 try:
                     if ext in supported_image:
                         success = processor.process_image(file_path, confidence=req.confidence)
@@ -151,7 +168,6 @@ def _run_job(job_id: str, req: ProcessRequest) -> None:
             job.queue.put(("error", {"message": f"Path does not exist: {req.input_path}"}))
 
     except Exception as e:
-        import traceback
         traceback.print_exc()
         job.queue.put(("error", {"message": str(e)}))
     finally:
@@ -179,15 +195,18 @@ async def stream_progress(job_id: str):
     job = jobs[job_id]
 
     def event_generator():
-        while True:
-            try:
-                event_type, data = job.queue.get(timeout=60)
-                yield _sse_line(event_type, data)
-                if event_type in ("complete", "error"):
+        try:
+            while True:
+                try:
+                    event_type, data = job.queue.get(timeout=60)
+                    yield _sse_line(event_type, data)
+                    if event_type in ("complete", "error"):
+                        break
+                except queue.Empty:
+                    yield _sse_line("error", {"message": "Job timed out"})
                     break
-            except queue.Empty:
-                yield _sse_line("error", {"message": "Job timed out"})
-                break
+        finally:
+            jobs.pop(job_id, None)
 
     return StreamingResponse(
         event_generator(),
