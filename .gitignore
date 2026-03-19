@@ -54,3 +54,16 @@ output*.txt
 
 # PyInstaller build artifacts
 *.spec.bak
+
+# Node.js
+node_modules/
+dist/
+release/
+
+# Electron
+*.app/
+
+# Environment
+.env
+.env.local
+.env*.local
