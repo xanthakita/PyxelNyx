@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "npm run build:renderer && npm run build:main",
     "build:renderer": "vite build",
-    "build:main": "tsc -p electron/main/tsconfig.json",
+    "build:main": "vite build",
     "build:python": "cd python-backend && pyinstaller pyxlenyx-backend.spec",
     "build:all": "npm run build && npm run build:python && npm run package",
     "package": "electron-builder",
