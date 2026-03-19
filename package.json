@@ -1,0 +1,78 @@
+{
+  "name": "pyxlenyx",
+  "version": "3.5.0",
+  "description": "AI-Powered Privacy Protection for Images & Videos",
+  "main": "dist/electron/main/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:renderer && npm run build:main",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p electron/main/tsconfig.json",
+    "build:python": "cd python-backend && pyinstaller pyxlenyx-backend.spec",
+    "build:all": "npm run build && npm run build:python && npm run package",
+    "package": "electron-builder",
+    "python:venv": "cd python-backend && uv venv",
+    "python:install": "cd python-backend && uv pip install -r requirements.txt",
+    "python:setup": "npm run python:venv && npm run python:install"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.19",
+    "@mui/material": "^5.15.19",
+    "axios": "^1.6.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "electron": "^30.0.6",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vite-plugin-electron": "^0.28.6",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  },
+  "author": "Global Emancipation Network <apps@globalemancipation.ngo>",
+  "license": "ISC",
+  "build": {
+    "appId": "ngo.globalemancipation.pyxlenyx",
+    "productName": "PyxelNyx",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "build/icon.icns",
+      "extraResources": [
+        { "from": "python-backend/dist/pyxlenyx-backend", "to": "backend/pyxlenyx-backend" }
+      ]
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico",
+      "extraResources": [
+        { "from": "python-backend/dist/pyxlenyx-backend.exe", "to": "backend/pyxlenyx-backend.exe" }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
