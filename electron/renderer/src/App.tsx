@@ -56,6 +56,11 @@ function App() {
         setInitError(err.message || 'Failed to connect to backend');
         setIsInitializing(false);
       });
+
+    return () => {
+      cleanupSseRef.current?.();
+      cleanupSseRef.current = null;
+    };
   }, []);
 
   const update = (partial: Partial<AppState>) =>
@@ -138,21 +143,17 @@ function App() {
           setStatus(`Error: ${evt.message}`, 'error.main');
         },
       });
-    } catch (err: any) {
+    } catch (err) {
       update({ processing: false, jobId: null });
-      setStatus(`Error: ${err.message}`, 'error.main');
+      setStatus(`Error: ${err instanceof Error ? err.message : String(err)}`, 'error.main');
     }
   };
 
   const handleCancel = async () => {
     if (state.jobId) {
-      await apiClient.cancelJob(state.jobId);
-      if (cleanupSseRef.current) {
-        cleanupSseRef.current();
-        cleanupSseRef.current = null;
-      }
-      update({ processing: false, jobId: null });
       setStatus('Cancelling...', 'warning.main');
+      await apiClient.cancelJob(state.jobId);
+      // SSE onComplete will fire with cancelled: true and handle cleanup
     }
   };
 
