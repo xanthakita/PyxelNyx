@@ -103,8 +103,9 @@ export class PythonBridge {
           return;
         }
       } catch {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Backend not ready yet
       }
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     throw new Error('Python backend failed to start within 30 seconds');
   }
