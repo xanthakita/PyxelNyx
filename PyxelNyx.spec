@@ -113,7 +113,7 @@ datas = [
 binaries = []
 
 a = Analysis(
-    ['gui_enhanced.py'],  # CORRECT ENTRY POINT
+    ['gui.py'],  # CORRECT ENTRY POINT
     pathex=[],
     binaries=binaries,
     datas=datas,

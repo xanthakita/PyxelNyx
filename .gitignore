@@ -22,6 +22,7 @@ wheels/
 *.egg
 
 # Virtual Environment
+.venv/
 venv/
 env/
 ENV/
@@ -40,9 +41,16 @@ Thumbs.db
 # YOLO models (downloaded at runtime)
 *.pt
 
-# Test files
+# Test output files
 test_images/
 *-background.*
+output*.txt
 
 # Logs
 *.log
+
+# PDF exports
+*.pdf
+
+# PyInstaller build artifacts
+*.spec.bak
