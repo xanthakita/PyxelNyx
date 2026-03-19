@@ -1,62 +1,73 @@
-import axios from 'axios';
-import type { ProcessRequest, ProgressEvent, FileStartEvent, CompleteEvent, ErrorEvent } from '../types';
+import axios, { AxiosInstance } from 'axios';
+import type { ProcessRequest, CompleteEvent, ErrorEvent, FileStartEvent, ProgressEvent } from '../types';
 
-let backendURL = '';
+class APIClient {
+  private client: AxiosInstance | null = null;
+  private baseURL: string = '';
 
-export function setBackendURL(url: string): void {
-  backendURL = url;
-}
-
-const client = axios.create();
-
-client.interceptors.request.use((config) => {
-  if (!config.baseURL) {
-    config.baseURL = backendURL;
+  async initialize(): Promise<void> {
+    this.baseURL = await window.electron.getBackendURL();
+    this.client = axios.create({
+      baseURL: this.baseURL,
+      timeout: 30000,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-  return config;
-});
 
-export async function processMedia(request: ProcessRequest): Promise<{ job_id: string }> {
-  const response = await client.post<{ job_id: string }>('/api/process', request);
-  return response.data;
-}
-
-export async function cancelJob(jobId: string): Promise<void> {
-  await client.post(`/api/cancel/${jobId}`);
-}
-
-export function streamProgress(
-  jobId: string,
-  handlers: {
-    onProgress: (event: ProgressEvent) => void;
-    onFileStart: (event: FileStartEvent) => void;
-    onComplete: (event: CompleteEvent) => void;
-    onError: (event: ErrorEvent) => void;
+  private getClient(): AxiosInstance {
+    if (!this.client) throw new Error('API client not initialized');
+    return this.client;
   }
-): () => void {
-  const eventSource = new EventSource(`${backendURL}/api/stream/${jobId}`);
 
-  eventSource.addEventListener('progress', (e) => {
-    handlers.onProgress(JSON.parse(e.data) as ProgressEvent);
-  });
+  async processMedia(request: ProcessRequest): Promise<{ job_id: string }> {
+    const response = await this.getClient().post<{ job_id: string }>('/api/process', request);
+    return response.data;
+  }
 
-  eventSource.addEventListener('file_start', (e) => {
-    handlers.onFileStart(JSON.parse(e.data) as FileStartEvent);
-  });
+  async cancelJob(jobId: string): Promise<void> {
+    await this.getClient().post(`/api/cancel/${jobId}`);
+  }
 
-  eventSource.addEventListener('complete', (e) => {
-    handlers.onComplete(JSON.parse(e.data) as CompleteEvent);
-    eventSource.close();
-  });
-
-  eventSource.addEventListener('error', (e) => {
-    if ((e as MessageEvent).data) {
-      handlers.onError(JSON.parse((e as MessageEvent).data) as ErrorEvent);
-    } else {
-      handlers.onError({ message: 'Connection lost' });
+  streamProgress(
+    jobId: string,
+    handlers: {
+      onProgress: (event: ProgressEvent) => void;
+      onFileStart: (event: FileStartEvent) => void;
+      onComplete: (event: CompleteEvent) => void;
+      onError: (event: ErrorEvent) => void;
     }
-    eventSource.close();
-  });
+  ): () => void {
+    const url = `${this.baseURL}/api/stream/${jobId}`;
+    const es = new EventSource(url);
 
-  return () => eventSource.close();
+    es.addEventListener('progress', (e) => {
+      handlers.onProgress(JSON.parse(e.data));
+    });
+
+    es.addEventListener('file_start', (e) => {
+      handlers.onFileStart(JSON.parse(e.data));
+    });
+
+    es.addEventListener('complete', (e) => {
+      const data: CompleteEvent = JSON.parse(e.data);
+      es.close();
+      handlers.onComplete(data);
+    });
+
+    es.addEventListener('error', (e: MessageEvent) => {
+      es.close();
+      try {
+        handlers.onError(JSON.parse(e.data));
+      } catch {
+        handlers.onError({ message: 'Connection error' });
+      }
+    });
+
+    return () => es.close();
+  }
+
+  isInitialized(): boolean { return this.client !== null; }
+  getBaseURL(): string { return this.baseURL; }
 }
+
+export const apiClient = new APIClient();

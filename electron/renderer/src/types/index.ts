@@ -35,3 +35,26 @@ export interface CompleteEvent {
 export interface ErrorEvent {
   message: string;
 }
+
+export type StatusColor = 'text.secondary' | 'primary.main' | 'success.main' | 'error.main' | 'warning.main';
+
+export interface AppState {
+  inputPath: string;
+  maskType: 'black' | 'blur';
+  blurIntensity: number;
+  blurPasses: number;
+  confidence: number;
+  modelName: string;
+  mediaType: 'images' | 'videos' | 'both';
+  keepAudio: boolean;
+  filenameSuffix: string;
+  frameInterval: number;
+  enableSkinDetection: boolean;
+  processing: boolean;
+  jobId: string | null;
+  fileProgress: number;
+  overallProgress: number;
+  currentFileName: string;
+  statusMessage: string;
+  statusColor: StatusColor;
+}
