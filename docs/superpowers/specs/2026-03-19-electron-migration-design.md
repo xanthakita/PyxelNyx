@@ -39,7 +39,7 @@ Python Backend (FastAPI + uvicorn, port 8766)
 4. Renderer calls `POST /api/process` to start a job → receives `{ job_id }`
 5. Renderer opens `EventSource` to `GET /api/stream/{job_id}` for real-time progress
 6. SSE emits `progress`, `file_start`, `complete`, and `error` event types
-7. On app quit, python-bridge sends SIGTERM (Unix) or `taskkill /T /F` (Windows)
+7. On app quit, python-bridge sends SIGTERM (Unix) or `taskkill /PID <pid> /T /F` (Windows)
 
 ### Why SSE (not polling or WebSocket)
 
@@ -126,11 +126,19 @@ event: file_start
 data: {"file": "photo.jpg", "index": 1, "total_files": 5}
 
 event: complete
-data: {"successful": 4, "total": 5, "output_path": "/path/to/file-background.jpg"}
+data: {"successful": 4, "total": 5, "output_path": "/path/to/file-background.jpg", "cancelled": false}
 
 event: error
 data: {"message": "Processing failed: <reason>"}
 ```
+
+**Notes on event semantics:**
+
+- `progress` fires only during **video** processing (per-frame via `progress_callback`). For **image** processing, the backend emits a synthetic `progress` with `{"current": 0, "total": 1, "percent": 0}` at start and `{"current": 1, "total": 1, "percent": 100}` at completion, so the renderer always sees defined progress for every file type.
+- `file_start.index` and `file_start.total_files` are the authoritative source for **overall batch progress**. The renderer must compute `overallProgress = (index - 1) / total_files * 100` on `file_start`, and `100` on `complete`. There is no separate `overall_progress` event.
+- `complete.output_path` contains the **actual** output path as written to disk (the backend computes it, never the renderer). For `.heic`/`.heif` inputs this will be a `.jpg` path. For batch jobs, `output_path` is the **parent folder** of the processed files (not a single file path). The renderer must not attempt to construct this path itself.
+- `complete.cancelled` is `true` if the job was cancelled via `POST /api/cancel/{job_id}`.
+- The SSE generator **closes the connection** after emitting `complete` or `error` (the generator function returns, ending the `StreamingResponse`). The renderer must remove the `EventSource` listener in the `onComplete`/`onError` handlers to prevent reconnection attempts.
 
 ### Routes
 
@@ -220,6 +228,8 @@ interface AppState {
 - `OutputSettings.frameInterval > 1` disables and unchecks `keepAudio`
 - `ProgressSection` receives progress values and status as props
 - `HelpDialog` is a stateless modal — content is static text (same as Tkinter version)
+- `BlurSettings` MUI Slider uses `step={2}` starting from 51 (odd values only: 51, 53, 55…301). The renderer enforces odd values via the slider step — the backend also silently rounds up even values as a safety net, but the renderer is the primary enforcer.
+- All `confidence` values are passed explicitly from `AppState` to `ProcessRequest` — never rely on `HumanBlurProcessor` method defaults (which are `0.5`, not `0.33`).
 
 ### api/client.ts
 
@@ -293,7 +303,7 @@ Bundles `blur_humans.py` + all model/CV dependencies. `--onefile` for simple dis
 | Input path doesn't exist | Backend returns 400; renderer shows error status |
 | Unsupported file format | Backend returns 400 with format list |
 | Processing error mid-job | SSE `error` event; renderer shows red status |
-| Job cancelled by user | `POST /cancel` → thread checks flag → SSE `complete` with cancelled flag |
+| Job cancelled by user | `POST /api/cancel/{job_id}` → thread checks flag → SSE `complete` with `cancelled: true` |
 | YOLO model not found | Backend returns 500; renderer shows error status |
 
 ---
