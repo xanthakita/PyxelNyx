@@ -1,3 +1,5 @@
+# DEPRECATED: This Tkinter GUI has been replaced by the Electron front end.
+# Keep for reference only. Run `npm run dev` from the repo root instead.
 #!/usr/bin/env python3
 """
 Human Blur GUI Tool - Enhanced Graphical Interface

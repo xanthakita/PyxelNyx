@@ -67,3 +67,9 @@ release/
 .env
 .env.local
 .env*.local
+
+# Python backend build artifacts
+python-backend/dist/
+python-backend/build/
+python-backend/__pycache__/
+python-backend/api/__pycache__/
