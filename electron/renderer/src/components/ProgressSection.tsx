@@ -20,9 +20,7 @@ export default function ProgressSection({ fileProgress, overallProgress, current
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
         <Box>
           <Typography variant="caption" color="text.secondary" fontWeight="bold">Individual File Progress</Typography>
-          {currentFileName && (
-            <Typography variant="caption" display="block" color="primary.main" noWrap sx={{ mb: 0.5 }}>{currentFileName}</Typography>
-          )}
+          <Typography variant="caption" display="block" color="primary.main" noWrap sx={{ mb: 0.5, minHeight: '20px' }}>{currentFileName}</Typography>
           <Typography variant="caption" display="block" sx={{ mb: 0.5 }}>{Math.round(fileProgress)}%</Typography>
           <LinearProgress variant="determinate" value={fileProgress} />
         </Box>

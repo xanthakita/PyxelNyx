@@ -87,7 +87,7 @@ export default function HelpDialog({ open, onClose }: Props) {
   const [tab, setTab] = useState(0);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} onTransitionExited={() => setTab(0)} maxWidth="md" fullWidth>
       <DialogTitle>Help — PyxelNyx</DialogTitle>
       <DialogContent>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
