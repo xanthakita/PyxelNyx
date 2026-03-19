@@ -4,30 +4,7 @@ import { pythonBridge } from './python-bridge';
 
 let mainWindow: BrowserWindow | null = null;
 
-async function createWindow() {
-  try {
-    console.log('Starting Python backend...');
-    await pythonBridge.start();
-    console.log('Python backend started successfully');
-  } catch (error) {
-    console.error('Failed to start Python backend:', error);
-    app.quit();
-    return;
-  }
-
-  mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 760,
-    minWidth: 950,
-    minHeight: 650,
-    webPreferences: {
-      preload: path.join(__dirname, '../preload/index.js'),
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-    title: 'PyxelNyx v3.5',
-  });
-
+function setupIPC() {
   ipcMain.handle('get-backend-url', () => pythonBridge.getBaseURL());
 
   ipcMain.handle('browse-file', async () => {
@@ -60,6 +37,31 @@ async function createWindow() {
   ipcMain.handle('open-file', async (_event, filePath: string) => {
     await shell.openPath(filePath);
   });
+}
+
+async function createWindow() {
+  try {
+    console.log('Starting Python backend...');
+    await pythonBridge.start();
+    console.log('Python backend started successfully');
+  } catch (error) {
+    console.error('Failed to start Python backend:', error);
+    app.quit();
+    return;
+  }
+
+  mainWindow = new BrowserWindow({
+    width: 1000,
+    height: 760,
+    minWidth: 950,
+    minHeight: 650,
+    webPreferences: {
+      preload: path.join(__dirname, '../preload/index.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+    title: 'PyxelNyx v3.5',
+  });
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
@@ -70,10 +72,12 @@ async function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  setupIPC();
+  await createWindow();
+});
 
-app.on('window-all-closed', async () => {
-  await pythonBridge.stop();
+app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
