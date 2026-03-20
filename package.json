@@ -71,6 +71,14 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] }
+      ],
+      "extraResources": [
+        { "from": "python-backend/dist/pyxlenyx-backend", "to": "backend/pyxlenyx-backend" }
+      ]
     }
   }
 }

@@ -1,0 +1,207 @@
+name: Build Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  # ─── macOS (Apple Silicon) ──────────────────────────────────────────────────
+  build-mac-arm64:
+    runs-on: macos-latest   # M1/M2/M3 runner (arm64)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: cd python-backend && uv venv && uv pip install -r requirements.txt pyinstaller
+
+      - name: Build Python backend
+        run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
+
+      - name: Build macOS app (arm64)
+        run: npx electron-builder --mac --arm64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-arm64
+          path: release/*.dmg
+
+  # ─── macOS (Intel) ──────────────────────────────────────────────────────────
+  build-mac-x64:
+    runs-on: macos-13       # Intel runner (x64)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: cd python-backend && uv venv && uv pip install -r requirements.txt pyinstaller
+
+      - name: Build Python backend
+        run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
+
+      - name: Build macOS app (x64)
+        run: npx electron-builder --mac --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-x64
+          path: release/*.dmg
+
+  # ─── Windows ────────────────────────────────────────────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: cd python-backend && uv venv && uv pip install -r requirements.txt pyinstaller
+        shell: bash
+
+      - name: Build Python backend
+        run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
+        shell: bash
+
+      - name: Build Windows app
+        run: npx electron-builder --win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: release/*Setup*.exe
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-portable
+          path: |
+            release/*.exe
+            !release/*Setup*.exe
+
+  # ─── Linux ──────────────────────────────────────────────────────────────────
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install system dependencies (for Electron)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libnotify-dev libnss3 libxss1 libasound2-dev
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: cd python-backend && uv venv && uv pip install -r requirements.txt pyinstaller
+
+      - name: Build Python backend
+        run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
+
+      - name: Build Linux app
+        run: npx electron-builder --linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: release/*.AppImage
+
+  # ─── GitHub Release ─────────────────────────────────────────────────────────
+  release:
+    needs: [build-mac-arm64, build-mac-x64, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/mac-arm64/*.dmg
+            artifacts/mac-x64/*.dmg
+            artifacts/windows-installer/*.exe
+            artifacts/windows-portable/*.exe
+            artifacts/linux/*.AppImage
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
