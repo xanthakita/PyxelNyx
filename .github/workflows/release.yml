@@ -39,9 +39,7 @@ jobs:
         run: npm run build
 
       - name: Build macOS app (arm64)
-        run: npx electron-builder --mac --arm64
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --mac --arm64 --publish never
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -81,9 +79,7 @@ jobs:
         run: npm run build
 
       - name: Build macOS app (x64)
-        run: npx electron-builder --mac --x64
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --mac --x64 --publish never
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -125,9 +121,7 @@ jobs:
         run: npm run build
 
       - name: Build Windows app
-        run: npx electron-builder --win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish never
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
@@ -180,9 +174,7 @@ jobs:
         run: npm run build
 
       - name: Build Linux app
-        run: npx electron-builder --linux
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --linux --publish never
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
