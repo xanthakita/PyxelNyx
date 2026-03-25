@@ -48,6 +48,7 @@ export interface AppState {
   mediaType: 'images' | 'videos' | 'both';
   keepAudio: boolean;
   filenameSuffix: string;
+  caseNumber: string;
   frameInterval: number;
   enableSkinDetection: boolean;
   processing: boolean;

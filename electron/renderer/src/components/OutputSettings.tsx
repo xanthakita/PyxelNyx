@@ -9,14 +9,16 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 interface Props {
   filenameSuffix: string;
+  caseNumber: string;
   frameInterval: number;
   keepAudio: boolean;
   onSuffixChange: (v: string) => void;
+  onCaseNumberChange: (v: string) => void;
   onFrameIntervalChange: (v: number) => void;
   onKeepAudioChange: (v: boolean) => void;
 }
 
-export default function OutputSettings({ filenameSuffix, frameInterval, keepAudio, onSuffixChange, onFrameIntervalChange, onKeepAudioChange }: Props) {
+export default function OutputSettings({ filenameSuffix, caseNumber, frameInterval, keepAudio, onSuffixChange, onCaseNumberChange, onFrameIntervalChange, onKeepAudioChange }: Props) {
   const { t } = useLanguage();
   const audioDisabled = frameInterval > 1;
 
@@ -32,7 +34,19 @@ export default function OutputSettings({ filenameSuffix, frameInterval, keepAudi
           value={filenameSuffix}
           onChange={(e) => onSuffixChange(e.target.value)}
           placeholder="-background"
-          helperText="e.g. -background, -blurred, -processed"
+          helperText={t.filenameSuffixHelper}
+        />
+      </Box>
+
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t.caseNumber}</Typography>
+        <TextField
+          size="small"
+          fullWidth
+          value={caseNumber}
+          onChange={(e) => onCaseNumberChange(e.target.value)}
+          placeholder={t.caseNumberPlaceholder}
+          helperText={t.caseNumberHelper}
         />
       </Box>
 

@@ -32,6 +32,7 @@ const DEFAULT_STATE: AppState = {
   mediaType: 'both',
   keepAudio: true,
   filenameSuffix: '-background',
+  caseNumber: '',
   frameInterval: 1,
   enableSkinDetection: false,
   processing: false,
@@ -81,6 +82,10 @@ function AppInner() {
 
     const blurIntensity = state.blurIntensity % 2 === 0 ? state.blurIntensity + 1 : state.blurIntensity;
 
+    const effectiveSuffix = state.caseNumber.trim()
+      ? `${state.filenameSuffix}-${state.caseNumber.trim()}`
+      : state.filenameSuffix;
+
     const request: ProcessRequest = {
       input_path: state.inputPath,
       mask_type: state.maskType,
@@ -90,7 +95,7 @@ function AppInner() {
       model_name: state.modelName,
       media_type: state.mediaType,
       keep_audio: state.keepAudio,
-      filename_suffix: state.filenameSuffix,
+      filename_suffix: effectiveSuffix,
       frame_interval: state.frameInterval,
       enable_skin_detection: state.enableSkinDetection,
     };
@@ -229,9 +234,11 @@ function AppInner() {
           />
           <OutputSettings
             filenameSuffix={state.filenameSuffix}
+            caseNumber={state.caseNumber}
             frameInterval={state.frameInterval}
             keepAudio={state.keepAudio}
             onSuffixChange={(v) => update({ filenameSuffix: v })}
+            onCaseNumberChange={(v) => update({ caseNumber: v })}
             onFrameIntervalChange={(v) => {
               const next: Partial<AppState> = { frameInterval: v };
               if (v > 1) next.keepAudio = false;

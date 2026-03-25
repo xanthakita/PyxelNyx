@@ -37,6 +37,10 @@ export interface T {
   // Output Settings
   outputSettings: string;
   filenameSuffix: string;
+  filenameSuffixHelper: string;
+  caseNumber: string;
+  caseNumberPlaceholder: string;
+  caseNumberHelper: string;
   frameInterval: string;
   frameIntervalDesc: string;
   keepAudio: string;
@@ -106,6 +110,10 @@ const en: T = {
   skinDetectionDesc: 'Detects skin tones near YOLO regions for better coverage',
   outputSettings: 'Output Settings',
   filenameSuffix: 'Filename Suffix',
+  filenameSuffixHelper: 'e.g. -background, -blurred, -processed',
+  caseNumber: 'Case Number',
+  caseNumberPlaceholder: 'e.g. 2024-001',
+  caseNumberHelper: 'Appended to output filename if provided',
   frameInterval: 'Frame Interval (videos)',
   frameIntervalDesc: '1 = every frame, 3 = every 3rd frame',
   keepAudio: '🔊 Keep audio in output videos',
@@ -220,6 +228,10 @@ const es: T = {
   skinDetectionDesc: 'Detecta tonos de piel cerca de las regiones YOLO',
   outputSettings: 'Ajustes de salida',
   filenameSuffix: 'Sufijo del nombre de archivo',
+  filenameSuffixHelper: 'p.ej. -background, -difuminado, -procesado',
+  caseNumber: 'Número de caso',
+  caseNumberPlaceholder: 'p.ej. 2024-001',
+  caseNumberHelper: 'Se añade al nombre del archivo de salida si se proporciona',
   frameInterval: 'Intervalo de fotogramas (videos)',
   frameIntervalDesc: '1 = cada fotograma, 3 = cada 3er fotograma',
   keepAudio: '🔊 Conservar audio en videos de salida',
@@ -334,6 +346,10 @@ const pt: T = {
   skinDetectionDesc: 'Detecta tons de pele próximos às regiões YOLO',
   outputSettings: 'Configurações de saída',
   filenameSuffix: 'Sufixo do nome do arquivo',
+  filenameSuffixHelper: 'ex: -background, -desfocado, -processado',
+  caseNumber: 'Número do caso',
+  caseNumberPlaceholder: 'ex: 2024-001',
+  caseNumberHelper: 'Adicionado ao nome do arquivo de saída se preenchido',
   frameInterval: 'Intervalo de quadros (vídeos)',
   frameIntervalDesc: '1 = cada quadro, 3 = a cada 3º quadro',
   keepAudio: '🔊 Manter áudio nos vídeos de saída',
@@ -448,6 +464,10 @@ const fr: T = {
   skinDetectionDesc: 'Détecte les teintes de peau près des régions YOLO',
   outputSettings: 'Paramètres de sortie',
   filenameSuffix: 'Suffixe du nom de fichier',
+  filenameSuffixHelper: 'ex. : -background, -flou, -traité',
+  caseNumber: 'Numéro de dossier',
+  caseNumberPlaceholder: 'ex. : 2024-001',
+  caseNumberHelper: 'Ajouté au nom du fichier de sortie si renseigné',
   frameInterval: 'Intervalle de trames (vidéos)',
   frameIntervalDesc: '1 = chaque trame, 3 = chaque 3ème trame',
   keepAudio: '🔊 Conserver le son dans les vidéos de sortie',
@@ -562,6 +582,10 @@ const it: T = {
   skinDetectionDesc: 'Rileva i toni della pelle vicino alle regioni YOLO',
   outputSettings: 'Impostazioni di output',
   filenameSuffix: 'Suffisso nome file',
+  filenameSuffixHelper: 'es. -background, -sfocato, -elaborato',
+  caseNumber: 'Numero caso',
+  caseNumberPlaceholder: 'es. 2024-001',
+  caseNumberHelper: 'Aggiunto al nome del file di output se inserito',
   frameInterval: 'Intervallo fotogrammi (video)',
   frameIntervalDesc: '1 = ogni fotogramma, 3 = ogni 3° fotogramma',
   keepAudio: '🔊 Mantieni audio nei video di output',
@@ -676,6 +700,10 @@ const tl: T = {
   skinDetectionDesc: 'Nakakakita ng mga kulay ng balat malapit sa mga rehiyon ng YOLO',
   outputSettings: 'Mga Setting ng Output',
   filenameSuffix: 'Suffix ng Pangalan ng File',
+  filenameSuffixHelper: 'hal. -background, -blur, -naproseso',
+  caseNumber: 'Numero ng Kaso',
+  caseNumberPlaceholder: 'hal. 2024-001',
+  caseNumberHelper: 'Idadagdag sa pangalan ng output file kung may nilalaman',
   frameInterval: 'Agwat ng Frame (mga video)',
   frameIntervalDesc: '1 = bawat frame, 3 = bawat ika-3 na frame',
   keepAudio: '🔊 Panatilihin ang audio sa output na mga video',
@@ -790,6 +818,10 @@ const zhTW: T = {
   skinDetectionDesc: '偵測 YOLO 區域附近的膚色以提高覆蓋率',
   outputSettings: '輸出設定',
   filenameSuffix: '檔案名稱後綴',
+  filenameSuffixHelper: '例如：-background、-模糊、-已處理',
+  caseNumber: '案件編號',
+  caseNumberPlaceholder: '例如：2024-001',
+  caseNumberHelper: '若填寫，將附加至輸出檔案名稱',
   frameInterval: '幀間隔（影片）',
   frameIntervalDesc: '1 = 每幀，3 = 每第 3 幀',
   keepAudio: '🔊 保留輸出影片中的音訊',
