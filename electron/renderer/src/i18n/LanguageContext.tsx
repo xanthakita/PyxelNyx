@@ -14,10 +14,18 @@ const LanguageContext = createContext<LanguageContextValue>({
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('pyxlenyx-language');
+    return (saved as Language) || 'en';
+  });
+
+  const handleSetLanguage = (lang: Language) => {
+    localStorage.setItem('pyxlenyx-language', lang);
+    setLanguage(lang);
+  };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t: translations[language] }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t: translations[language] }}>
       {children}
     </LanguageContext.Provider>
   );
