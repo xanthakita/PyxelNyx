@@ -1,123 +1,351 @@
-# Quick Start Guide
-
-Get started with the Human Blur CLI Tool in 5 minutes!
-
-## 🚀 Installation (2 minutes)
-
-```bash
-# 1. Navigate to the tool directory
-cd pyxelnyx
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Verify installation
-python blur_humans.py --help
-```
-
-✅ **Done!** The tool is ready to use.
+# PyxelNyx — Quick Start Guide
 
 ---
 
-## 💡 Your First Blur (30 seconds)
+## 🇬🇧 English
+
+### First Time Setup
+
+**Prerequisites — install these once:**
+- [Node.js 18+](https://nodejs.org) (includes npm)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — fast Python package manager
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**Set up the project:**
 
 ```bash
-# Process a single image
-python blur_humans.py your_photo.jpg
+# 1. Clone the repository
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. Install Node.js dependencies
+npm install
+
+# 3. Set up Python backend (creates virtual environment + installs packages)
+npm run python:setup
+
+# 4. Launch the app
+npm run dev
 ```
 
-**Result:** Creates `your_photo-background.jpg` with humans blurred out!
+> **Note:** The first time you process a file, the AI model (~6 MB) downloads automatically. Requires an internet connection.
 
 ---
 
-## 🎯 Common Use Cases
+### Every Time After That
 
-### 1. Remove People from Photos
 ```bash
-python blur_humans.py photo.jpg
+npm run dev
 ```
 
-### 2. Process Multiple Images
-```bash
-python blur_humans.py /path/to/photos/
-```
-
-### 3. Maximum Blur (default)
-```bash
-python blur_humans.py photo.jpg --blur 99
-```
-
-### 4. Light Blur
-```bash
-python blur_humans.py photo.jpg --blur 21
-```
-
-### 5. Better Accuracy (slower)
-```bash
-python blur_humans.py photo.jpg --model yolov8m.pt
-```
+That's it. The setup only happens once.
 
 ---
 
-## 📊 What to Expect
-
-### Processing Speed (CPU)
-- **Single image**: 1-3 seconds
-- **Batch (100 images)**: 2-5 minutes
-- **With GPU**: 5-10x faster!
-
-### Detection Accuracy
-- ✓ Standing people: ~95%
-- ✓ Sitting people: ~90%
-- ✓ Partial visibility: ~75%
-- ✓ Distant people: ~60%
-
 ---
 
-## 🔧 Adjust Settings
+## 🇪🇸 Español
 
-### Blur Intensity
+### Configuración inicial
+
+**Requisitos previos — instalar una sola vez:**
+- [Node.js 18+](https://nodejs.org) (incluye npm)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — gestor de paquetes de Python
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**Configurar el proyecto:**
+
 ```bash
---blur 21    # Light blur
---blur 51    # Medium blur
---blur 99    # Maximum blur (default)
+# 1. Clonar el repositorio
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. Instalar dependencias de Node.js
+npm install
+
+# 3. Configurar el backend de Python (crea el entorno virtual e instala paquetes)
+npm run python:setup
+
+# 4. Iniciar la aplicación
+npm run dev
 ```
 
-### Detection Sensitivity
+> **Nota:** La primera vez que proceses un archivo, el modelo de IA (~6 MB) se descarga automáticamente. Requiere conexión a internet.
+
+---
+
+### Cada vez después de eso
+
 ```bash
---confidence 0.3    # More sensitive (catches more)
---confidence 0.5    # Balanced (default)
---confidence 0.7    # Stricter (only clear detections)
+npm run dev
 ```
 
-### Model Selection
+Eso es todo. La configuración solo ocurre una vez.
+
+---
+
+---
+
+## 🇧🇷 Português
+
+### Configuração inicial
+
+**Pré-requisitos — instalar uma vez:**
+- [Node.js 18+](https://nodejs.org) (inclui npm)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — gerenciador de pacotes Python
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**Configurar o projeto:**
+
 ```bash
---model yolov8n.pt    # Fastest (default)
---model yolov8s.pt    # Balanced
---model yolov8m.pt    # Most accurate
+# 1. Clonar o repositório
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. Instalar dependências do Node.js
+npm install
+
+# 3. Configurar o backend Python (cria o ambiente virtual e instala pacotes)
+npm run python:setup
+
+# 4. Iniciar o aplicativo
+npm run dev
 ```
 
----
-
-## 📁 Output Files
-
-Input: `photo.jpg`  
-Output: `photo-background.jpg`
-
-**Original files are never modified!**
+> **Nota:** Na primeira vez que você processar um arquivo, o modelo de IA (~6 MB) é baixado automaticamente. Requer conexão com a internet.
 
 ---
 
-## 🆘 Need Help?
+### Todas as vezes depois disso
 
-- **Full documentation**: [README.md](README.md)
-- **More examples**: [EXAMPLES.md](EXAMPLES.md)
-- **Installation help**: [INSTALL.md](INSTALL.md)
+```bash
+npm run dev
+```
+
+É só isso. A configuração acontece apenas uma vez.
 
 ---
 
-## 🎉 That's it!
+---
 
-You're now ready to blur humans in images. Start with the basic command and experiment with different settings to find what works best for your use case.
+## 🇫🇷 Français
 
-**Happy blurring!** 🌀
+### Configuration initiale
+
+**Prérequis — à installer une seule fois :**
+- [Node.js 18+](https://nodejs.org) (inclut npm)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — gestionnaire de paquets Python
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**Configurer le projet :**
+
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. Installer les dépendances Node.js
+npm install
+
+# 3. Configurer le backend Python (crée l'environnement virtuel et installe les paquets)
+npm run python:setup
+
+# 4. Lancer l'application
+npm run dev
+```
+
+> **Remarque :** La première fois que vous traitez un fichier, le modèle d'IA (~6 Mo) se télécharge automatiquement. Nécessite une connexion internet.
+
+---
+
+### Chaque fois ensuite
+
+```bash
+npm run dev
+```
+
+C'est tout. La configuration ne se fait qu'une seule fois.
+
+---
+
+---
+
+## 🇮🇹 Italiano
+
+### Configurazione iniziale
+
+**Prerequisiti — da installare una sola volta:**
+- [Node.js 18+](https://nodejs.org) (include npm)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — gestore di pacchetti Python
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**Configurare il progetto:**
+
+```bash
+# 1. Clonare il repository
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. Installare le dipendenze Node.js
+npm install
+
+# 3. Configurare il backend Python (crea l'ambiente virtuale e installa i pacchetti)
+npm run python:setup
+
+# 4. Avviare l'applicazione
+npm run dev
+```
+
+> **Nota:** La prima volta che elabori un file, il modello AI (~6 MB) viene scaricato automaticamente. È necessaria una connessione a internet.
+
+---
+
+### Ogni volta dopo
+
+```bash
+npm run dev
+```
+
+Tutto qui. La configurazione avviene una sola volta.
+
+---
+
+---
+
+## 🇵🇭 Filipino
+
+### Unang Setup
+
+**Mga kinakailangan — i-install nang isang beses:**
+- [Node.js 18+](https://nodejs.org) (kasama ang npm)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — mabilis na Python package manager
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**I-set up ang project:**
+
+```bash
+# 1. I-clone ang repository
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. I-install ang mga Node.js dependency
+npm install
+
+# 3. I-set up ang Python backend (lumilikha ng virtual environment at nag-i-install ng mga pakete)
+npm run python:setup
+
+# 4. Ilunsad ang app
+npm run dev
+```
+
+> **Tandaan:** Sa unang pagkakataon na mag-proseso ka ng file, ang AI model (~6 MB) ay awtomatikong dina-download. Kailangan ng koneksyon sa internet.
+
+---
+
+### Sa bawat pagkakataon pagkatapos noon
+
+```bash
+npm run dev
+```
+
+Iyon na. Isang beses lang ang setup.
+
+---
+
+---
+
+## 🇹🇼 繁體中文
+
+### 首次設定
+
+**前置需求 — 只需安裝一次：**
+- [Node.js 18+](https://nodejs.org)（含 npm）
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/) — 快速 Python 套件管理工具
+
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  # Windows（PowerShell）
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+**設定專案：**
+
+```bash
+# 1. 複製儲存庫
+git clone https://github.com/GlobalEmancipationNetwork/PyxelNyx.git
+cd PyxelNyx
+
+# 2. 安裝 Node.js 相依套件
+npm install
+
+# 3. 設定 Python 後端（建立虛擬環境並安裝套件）
+npm run python:setup
+
+# 4. 啟動應用程式
+npm run dev
+```
+
+> **注意：** 第一次處理檔案時，AI 模型（約 6 MB）會自動下載。需要網路連線。
+
+---
+
+### 之後每次使用
+
+```bash
+npm run dev
+```
+
+就這樣。設定只需要做一次。
+
+---
