@@ -35,6 +35,9 @@ jobs:
       - name: Build Python backend
         run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
 
+      - name: Build renderer (Vite)
+        run: npm run build
+
       - name: Build macOS app (arm64)
         run: npx electron-builder --mac --arm64
         env:
@@ -73,6 +76,9 @@ jobs:
 
       - name: Build Python backend
         run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
+
+      - name: Build renderer (Vite)
+        run: npm run build
 
       - name: Build macOS app (x64)
         run: npx electron-builder --mac --x64
@@ -114,6 +120,9 @@ jobs:
       - name: Build Python backend
         run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
         shell: bash
+
+      - name: Build renderer (Vite)
+        run: npm run build
 
       - name: Build Windows app
         run: npx electron-builder --win
@@ -166,6 +175,9 @@ jobs:
 
       - name: Build Python backend
         run: cd python-backend && uv run pyinstaller pyxlenyx-backend.spec
+
+      - name: Build renderer (Vite)
+        run: npm run build
 
       - name: Build Linux app
         run: npx electron-builder --linux
