@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 import TextField from '@mui/material/TextField';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface Props {
   disabled: boolean;
@@ -14,13 +15,15 @@ interface Props {
 }
 
 export default function BlurSettings({ disabled, blurIntensity, blurPasses, onIntensityChange, onPassesChange }: Props) {
+  const { t } = useLanguage();
+
   return (
     <Paper variant="outlined" sx={{ p: 2, opacity: disabled ? 0.5 : 1 }}>
-      <Typography variant="subtitle2" gutterBottom>Blur Settings (Blur Mode Only)</Typography>
+      <Typography variant="subtitle2" gutterBottom>{t.blurSettings}</Typography>
 
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">Intensity</Typography>
+          <Typography variant="caption" color="text.secondary">{t.intensity}</Typography>
           <Typography variant="caption">{blurIntensity}</Typography>
         </Box>
         <Slider
@@ -35,7 +38,7 @@ export default function BlurSettings({ disabled, blurIntensity, blurPasses, onIn
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>Passes:</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{t.passes}</Typography>
         <TextField
           type="number"
           size="small"
@@ -48,7 +51,7 @@ export default function BlurSettings({ disabled, blurIntensity, blurPasses, onIn
           inputProps={{ min: 1, max: 10 }}
           sx={{ width: 80 }}
         />
-        <Typography variant="caption" color="text.secondary">More passes = stronger blur</Typography>
+        <Typography variant="caption" color="text.secondary">{t.morePassesStronger}</Typography>
       </Box>
     </Paper>
   );

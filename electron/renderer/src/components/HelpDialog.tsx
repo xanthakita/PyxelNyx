@@ -8,6 +8,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const GUI_HELP = `OVERVIEW
 PyxelNyx automatically detects and masks/blurs humans in images and videos using AI (YOLOv8 segmentation).
@@ -84,15 +85,16 @@ interface Props {
 }
 
 export default function HelpDialog({ open, onClose }: Props) {
+  const { t } = useLanguage();
   const [tab, setTab] = useState(0);
 
   return (
     <Dialog open={open} onClose={onClose} onTransitionExited={() => setTab(0)} maxWidth="md" fullWidth>
-      <DialogTitle>Help — PyxelNyx</DialogTitle>
+      <DialogTitle>{t.help} — PyxelNyx</DialogTitle>
       <DialogContent>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-          <Tab label="GUI Usage" />
-          <Tab label="CLI Usage" />
+          <Tab label={t.guiUsage} />
+          <Tab label={t.cliUsage} />
         </Tabs>
         <Box sx={{ height: 400, overflow: 'auto' }}>
           <Typography
@@ -105,7 +107,7 @@ export default function HelpDialog({ open, onClose }: Props) {
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>{t.close}</Button>
       </DialogActions>
     </Dialog>
   );

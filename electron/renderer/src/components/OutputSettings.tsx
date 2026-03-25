@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface Props {
   filenameSuffix: string;
@@ -16,14 +17,15 @@ interface Props {
 }
 
 export default function OutputSettings({ filenameSuffix, frameInterval, keepAudio, onSuffixChange, onFrameIntervalChange, onKeepAudioChange }: Props) {
+  const { t } = useLanguage();
   const audioDisabled = frameInterval > 1;
 
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
-      <Typography variant="subtitle2" gutterBottom>Output Settings</Typography>
+      <Typography variant="subtitle2" gutterBottom>{t.outputSettings}</Typography>
 
       <Box sx={{ mb: 2 }}>
-        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>Filename Suffix</Typography>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t.filenameSuffix}</Typography>
         <TextField
           size="small"
           fullWidth
@@ -35,7 +37,7 @@ export default function OutputSettings({ filenameSuffix, frameInterval, keepAudi
       </Box>
 
       <Box sx={{ mb: 1.5 }}>
-        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>Frame Interval (videos)</Typography>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t.frameInterval}</Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TextField
             type="number"
@@ -48,7 +50,7 @@ export default function OutputSettings({ filenameSuffix, frameInterval, keepAudi
             inputProps={{ min: 1, max: 15 }}
             sx={{ width: 80 }}
           />
-          <Typography variant="caption" color="text.secondary">1 = every frame, 3 = every 3rd frame</Typography>
+          <Typography variant="caption" color="text.secondary">{t.frameIntervalDesc}</Typography>
         </Box>
       </Box>
 
@@ -63,9 +65,9 @@ export default function OutputSettings({ filenameSuffix, frameInterval, keepAudi
         }
         label={
           <Box>
-            <Typography variant="body2">🔊 Keep audio in output videos</Typography>
+            <Typography variant="body2">{t.keepAudio}</Typography>
             <Typography variant="caption" color={audioDisabled ? 'warning.main' : 'text.secondary'}>
-              {audioDisabled ? 'Auto-disabled with frame skipping' : 'Requires ffmpeg'}
+              {audioDisabled ? t.audioDisabledDesc : t.keepAudioDesc}
             </Typography>
           </Box>
         }

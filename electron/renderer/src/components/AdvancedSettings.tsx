@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const MODELS = [
   'yolov8n-seg.pt',
@@ -26,13 +27,15 @@ interface Props {
 }
 
 export default function AdvancedSettings({ confidence, modelName, enableSkinDetection, onConfidenceChange, onModelChange, onSkinDetectionChange }: Props) {
+  const { t } = useLanguage();
+
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
-      <Typography variant="subtitle2" gutterBottom>Advanced Settings</Typography>
+      <Typography variant="subtitle2" gutterBottom>{t.advancedSettings}</Typography>
 
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">Confidence</Typography>
+          <Typography variant="caption" color="text.secondary">{t.confidence}</Typography>
           <Typography variant="caption">{confidence.toFixed(2)}</Typography>
         </Box>
         <Slider
@@ -46,7 +49,7 @@ export default function AdvancedSettings({ confidence, modelName, enableSkinDete
       </Box>
 
       <Box sx={{ mb: 2 }}>
-        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>Person Model</Typography>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t.personModel}</Typography>
         <Select
           size="small"
           fullWidth
@@ -69,8 +72,8 @@ export default function AdvancedSettings({ confidence, modelName, enableSkinDete
         }
         label={
           <Box>
-            <Typography variant="body2">Enable Skin Tone Detection</Typography>
-            <Typography variant="caption" color="text.secondary">Detects skin tones near YOLO regions for better coverage</Typography>
+            <Typography variant="body2">{t.enableSkinDetection}</Typography>
+            <Typography variant="caption" color="text.secondary">{t.skinDetectionDesc}</Typography>
           </Box>
         }
       />
