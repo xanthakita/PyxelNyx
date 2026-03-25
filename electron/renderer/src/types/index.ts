@@ -47,7 +47,7 @@ export interface AppState {
   modelName: string;
   mediaType: 'images' | 'videos' | 'both';
   keepAudio: boolean;
-  filenameSuffix: string;
+  officerName: string;
   caseNumber: string;
   frameInterval: number;
   enableSkinDetection: boolean;

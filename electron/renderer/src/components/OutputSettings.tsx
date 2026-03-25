@@ -8,17 +8,17 @@ import Checkbox from '@mui/material/Checkbox';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface Props {
-  filenameSuffix: string;
+  officerName: string;
   caseNumber: string;
   frameInterval: number;
   keepAudio: boolean;
-  onSuffixChange: (v: string) => void;
+  onOfficerNameChange: (v: string) => void;
   onCaseNumberChange: (v: string) => void;
   onFrameIntervalChange: (v: number) => void;
   onKeepAudioChange: (v: boolean) => void;
 }
 
-export default function OutputSettings({ filenameSuffix, caseNumber, frameInterval, keepAudio, onSuffixChange, onCaseNumberChange, onFrameIntervalChange, onKeepAudioChange }: Props) {
+export default function OutputSettings({ officerName, caseNumber, frameInterval, keepAudio, onOfficerNameChange, onCaseNumberChange, onFrameIntervalChange, onKeepAudioChange }: Props) {
   const { t } = useLanguage();
   const audioDisabled = frameInterval > 1;
 
@@ -27,14 +27,14 @@ export default function OutputSettings({ filenameSuffix, caseNumber, frameInterv
       <Typography variant="subtitle2" gutterBottom>{t.outputSettings}</Typography>
 
       <Box sx={{ mb: 2 }}>
-        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t.filenameSuffix}</Typography>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t.officerName}</Typography>
         <TextField
           size="small"
           fullWidth
-          value={filenameSuffix}
-          onChange={(e) => onSuffixChange(e.target.value)}
-          placeholder="-background"
-          helperText={t.filenameSuffixHelper}
+          value={officerName}
+          onChange={(e) => onOfficerNameChange(e.target.value)}
+          placeholder={t.officerNamePlaceholder}
+          helperText={t.officerNameHelper}
         />
       </Box>
 

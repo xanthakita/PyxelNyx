@@ -31,7 +31,7 @@ const DEFAULT_STATE: AppState = {
   modelName: 'yolov8n-seg.pt',
   mediaType: 'both',
   keepAudio: true,
-  filenameSuffix: '-background',
+  officerName: '',
   caseNumber: '',
   frameInterval: 1,
   enableSkinDetection: false,
@@ -82,9 +82,8 @@ function AppInner() {
 
     const blurIntensity = state.blurIntensity % 2 === 0 ? state.blurIntensity + 1 : state.blurIntensity;
 
-    const effectiveSuffix = state.caseNumber.trim()
-      ? `${state.filenameSuffix}-${state.caseNumber.trim()}`
-      : state.filenameSuffix;
+    const parts = [state.officerName.trim(), state.caseNumber.trim()].filter(Boolean);
+    const effectiveSuffix = parts.length > 0 ? '-' + parts.join('-') : '-background';
 
     const request: ProcessRequest = {
       input_path: state.inputPath,
@@ -233,11 +232,11 @@ function AppInner() {
             onSkinDetectionChange={(v) => update({ enableSkinDetection: v })}
           />
           <OutputSettings
-            filenameSuffix={state.filenameSuffix}
+            officerName={state.officerName}
             caseNumber={state.caseNumber}
             frameInterval={state.frameInterval}
             keepAudio={state.keepAudio}
-            onSuffixChange={(v) => update({ filenameSuffix: v })}
+            onOfficerNameChange={(v) => update({ officerName: v })}
             onCaseNumberChange={(v) => update({ caseNumber: v })}
             onFrameIntervalChange={(v) => {
               const next: Partial<AppState> = { frameInterval: v };
